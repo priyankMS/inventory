@@ -22,7 +22,7 @@ const SignUp = () => {
 
     
 
-
+      
       const result = await signup({
         fullname: values.fullname,
         username: values.username,

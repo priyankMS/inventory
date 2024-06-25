@@ -2,11 +2,8 @@ import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 
 @Schema()
 export class User {
-
   @Prop({ required: true })
   fullname: string;
-
-
 
   @Prop({ required: true })
   username: string;
@@ -17,12 +14,8 @@ export class User {
   @Prop({ unique: true, required: true })
   mobileNumber: Number;
 
-
-
   @Prop({ required: true })
   password: string;
-
-
 
   @Prop({ default: false })
   verified: boolean;

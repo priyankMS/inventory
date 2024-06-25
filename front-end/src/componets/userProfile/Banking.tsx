@@ -1,10 +1,15 @@
 import { Button, Form, FormProps, Input, message } from "antd";
 import "react-phone-input-2/lib/style.css";
+// import { useCreateBankMutation } from "../../services/Bank";
+import { useState } from "react";
 
 type FieldType = {
-  accountnumber?: string;
+  accountNumber?: string;
   ifsccode?: string;
-  bankname?: string;
+  bankName?: string;
+  city?: string;
+  address?: string;
+  state?: string;
 };
 
 const style = {
@@ -17,10 +22,8 @@ const style = {
   outline: "none",
   borderRadius: "0px",
   padding: "2px 0px",
-  width: "80%",
+  width: "100%",
 };
-
-
 
 function Banking({
   setSelectedMenu,
@@ -28,15 +31,28 @@ function Banking({
   setSelectedMenu: React.Dispatch<React.SetStateAction<string>>;
 }) {
   const [form] = Form.useForm();
+  // const [createBank] = useCreateBankMutation();
+  const [loading, setLoading] = useState(false);
 
-  const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
-    setSelectedMenu("summary");
-    message.success("Banking Details Added Successfully");
-    console.log("Success:", values);
+  const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
+    setLoading(true);
+    try {
+      // await createBank(values).unwrap();
+      message.success("Banking Details Added Successfully");
+      setSelectedMenu("summary");
+      console.log("Success:", values);
+    } catch (error) {
+      console.error("Error:", error);
+      const errorMessage = error?.data?.message || "Failed to add banking details. Please try again.";
+      message.error(errorMessage);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
     console.log("Failed:", errorInfo);
+    message.error("Please check the form for errors and try again.");
   };
 
   const handleReset = () => {
@@ -45,7 +61,9 @@ function Banking({
 
   return (
     <div className="container mx-auto lg:p-4">
-      <p className="text-sm lg:mt-5 ">Banking Details</p>
+      <p className="text-sm lg:mt-5">Banking Details</p>
+
+
       <Form
         form={form}
         name="basic"
@@ -54,60 +72,111 @@ function Banking({
         onFinishFailed={onFinishFailed}
         autoComplete="off"
       >
-        <div className="grid lg:mt-10 grid-cols-1 lg:px-4 md:grid-cols-3 lg:gap-4">
-          <Form.Item
-            name="accountnumber"
-            rules={[
-              { required: true, message: "Please input your account number!" },
-            ]}
-          >
-            <Input
-              placeholder="Account Number"
-              value={form.getFieldValue("accountnumber")}
-              className="placeholder-black placeholder-opacity-75"
-              style={style}
-            />
-          </Form.Item>
+        <div className="grid lg:mt-10 grid-cols-1 gap-4 md:grid-cols-3 lg:px-4 lg:gap-4">
+          <div className="relative z-0 w-full mb-6 group">
+            <Form.Item
+              name="accountNumber"
+              rules={[
+                { required: true, message: "Please input your account number!" },
+              ]}
+            >
+              <Input
+                placeholder="Account Number"
+                className="placeholder-black placeholder-opacity-75"
+                style={style}
+              />
+            </Form.Item>
+          </div>
 
-          <Form.Item
-            name="ifsccode"
-            rules={[{ required: true, message: "Please input your IFSC code!" }]}
-          >
-            <Input
-              placeholder="IFSC Code"
-              value={form.getFieldValue("ifsccode")}
-              className="placeholder-black placeholder-opacity-75"
-              style={style}
-            />
-          </Form.Item>
+          <div className="relative z-0 w-full mb-6 group">
+            <Form.Item
+              name="ifsccode"
+              rules={[
+                { required: true, message: "Please input your IFSC code!" },
+              ]}
+            >
+              <Input
+                placeholder="IFSC Code"
+                className="placeholder-black placeholder-opacity-75"
+                style={style}
+              />
+            </Form.Item>
+          </div>
 
-          <Form.Item
-            name="bankname"
-            rules={[{ required: true, message: "Please input your bank name!" }]}
-          >
-            <Input
-              placeholder="Bank Name"
-              value={form.getFieldValue("bankname")}
-              className="placeholder-black placeholder-opacity-75"
-              style={style}
-            />
-          </Form.Item>
+          <div className="relative z-0 w-full mb-6 group">
+            <Form.Item
+              name="bankName"
+              rules={[
+                { required: true, message: "Please input your bank name!" },
+              ]}
+            >
+              <Input
+                placeholder="Bank Name"
+                className="placeholder-black placeholder-opacity-75"
+                style={style}
+              />
+            </Form.Item>
+          </div>
+          <div className="relative z-0 w-full mb-6 group">
+            <Form.Item
+              name="state"
+              rules={[
+                { required: true, message: "Please input your State name!" },
+              ]}
+            >
+              <Input
+                placeholder="State"
+                className="placeholder-black placeholder-opacity-75"
+                style={style}
+              />
+            </Form.Item>
+          </div>
+          <div className="relative z-0 w-full mb-6 group">
+            <Form.Item
+              name="city"
+              rules={[
+                { required: true, message: "Please input your city name!" },
+              ]}
+            >
+              <Input
+                placeholder="City"
+                className="placeholder-black placeholder-opacity-75"
+                style={style}
+              />
+            </Form.Item>
+          </div>
+          <div className="relative z-0 w-full mb-6 group">
+            <Form.Item
+              name="address"
+              rules={[
+                { required: true, message: "Please input your address name!" },
+              ]}
+            >
+              <Input
+                placeholder="Address"
+                className="placeholder-black placeholder-opacity-75"
+                style={style}
+              />
+            </Form.Item>
+          </div>
         </div>
       </Form>
 
-      <div className="flex flex-col md:flex-row  gap-3 justify-between lg:mt-20">
+      <div className="flex flex-col md:flex-row gap-3 justify-between lg:mt-20">
         <Button
           className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 rounded-full"
           onClick={handleReset}
+          disabled={loading}
         >
           Cancel
         </Button>
 
-        <div className="flex   gap-4">
+        <div className="flex gap-4">
           <Button
             type="default"
             onClick={() => setSelectedMenu("business")}
             className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 py-2 px-4 rounded-full"
+            disabled={loading}
           >
             Previous
           </Button>
@@ -116,6 +185,7 @@ function Banking({
             htmlType="submit"
             onClick={form.submit}
             className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 py-2 px-4 rounded-full"
+            loading={loading}
           >
             Save and Continue
           </Button>

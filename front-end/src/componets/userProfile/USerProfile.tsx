@@ -1,17 +1,19 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Button, Form, FormProps, Input, message } from "antd";
-import ReactFlagsSelect from "react-flags-select";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { ArrowRightOutlined } from "@ant-design/icons";
+import {
+  useGetUserByIdQuery,
+  useUpdateUserMutation,
+} from "../../services/Singup";
+import { jwtDecode } from "jwt-decode";
 
 type FieldType = {
   fullname?: string;
   username?: string;
-  password?: string;
   email?: string;
   phone?: string;
-  country?: string;
 };
 
 const style = {
@@ -24,152 +26,162 @@ const style = {
   outline: "none",
   borderRadius: "0px",
   padding: "2px 0px",
-  width: "80%",
 };
+
 const mobileStyle = {
- 
-  
-  '@media (max-width: 600px)': { 
-    width: "50%",
-  },
-  '@media (min-width: 600px)': {
-    width: "100%",
-  },
-}
+  width: "100%",
+};
 
 export interface UserProfileProps {
   setSelectedMenu: React.Dispatch<React.SetStateAction<string>>;
-
 }
 
 function UserProfile({ setSelectedMenu }: UserProfileProps) {
-  
-  
-  const [selected, setSelected] = React.useState<string>("");
+  const accessToken = sessionStorage.getItem("accessToken");
+  const { id }: any = accessToken ? jwtDecode(accessToken) : "";
+  const [updateUser] = useUpdateUserMutation();
+  const { data: user, refetch } = useGetUserByIdQuery({ id });
+  const [formData, setFormData] = useState<FieldType>({});
+  // const [isModalVisible, setIsModalVisible] = useState(false);
   const [form] = Form.useForm();
 
-  const onFinish: FormProps<FieldType>["onFinish"] = (values) => {
-    setSelectedMenu("business")
-    message.success("User Details Added Successfully");
-    console.log("Success:", values);
+  useEffect(() => {
+    if (user) {
+      const userData = {
+        fullname: user.fullname,
+        username: user.username,
+        email: user.email,
+        phone: user.mobileNumber ? user.mobileNumber.toString() : undefined,
+      };
+      setFormData(userData);
+      form.setFieldsValue(userData);
+    }
+  }, [user, form]);
+
+  const onFinish = async (values: FieldType) => {
+    try {
+      const newUser = {
+        fullname: values.fullname,
+        mobileNumber: values.phone,
+      };
+      if (!formData) throw new Error("No data found");
+      await updateUser({ id, updatedUser: newUser }).unwrap();
+      setSelectedMenu("business");
+      message.success("User Details Added Successfully");
+      refetch();
+    } catch (error) {
+      console.log("Failed:", error);
+    }
   };
 
-  const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
+  const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (
+    errorInfo
+  ) => {
     console.log("Failed:", errorInfo);
   };
 
-  React.useEffect(() => {
-    form.setFieldsValue({ country: selected });
-  }, [selected, form]);
-
-  const handleCancel = ()=>{
+  const handleCancel = () => {
     form.resetFields();
-  }
+  };
+
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
 
   return (
-    <div className="container mx-auto overflow-hidden">
-      <p className=" lg:mt-5 text-sm" >General Owner Details</p>
+    <div className="container mx-auto overflow-hidden ">
+      <div className=" flex  justify-between mt-1">
+        <p className="lg:mt-5 text-sm">General Owner Details</p>
+        {/* <EditOutlined  
+       className="text-2xl text-blue-500 cursor-pointer"
+        onClick={handleEdit}
+      /> */}
+      </div>
       <Form
         form={form}
         name="basic"
-        initialValues={{ remember: true }}
+        initialValues={formData}
         onFinish={onFinish}
         onFinishFailed={onFinishFailed}
         autoComplete="off"
       >
-       <div className="grid lg:mt-10 lg:px-4 grid-cols-1 md:grid-cols-3 lg:gap-4">
+        <div className="grid lg:mt-10 lg:px-4 grid-cols-1 md:grid-cols-2 lg:gap-4 lg:gap-y-4">
           <Form.Item
             name="fullname"
-            rules={[{ required: true, message: "Please input your first name!" }]}
+            // label="Full Name"
+            rules={[
+              { required: true, message: "Please input your full name!" },
+            ]}
           >
             <Input
               placeholder="Full Name"
-               className="placeholder-black placeholder-opacity-75"
-              style={style}
-            />
-          </Form.Item>
-
-          <Form.Item
-            name="password"
-            rules={[{ required: true, message: "Please input your last name!" }]}
-          >
-            <Input.Password
-              placeholder="password"
-              
-              className="placeholder-black placeholder-opacity-75 "
+              className="placeholder-black placeholder-opacity-75 lg:w-3/5 w-full"
               style={style}
             />
           </Form.Item>
 
           <Form.Item
             name="username"
+            // label="Username"
             rules={[{ required: true, message: "Please input your username!" }]}
           >
             <Input
               placeholder="Username"
-              className="placeholder-black placeholder-opacity-75"
+              disabled
+              className="placeholder-black placeholder-opacity-75 lg:w-3/5 w-full"
               style={style}
             />
           </Form.Item>
 
           <Form.Item
             name="email"
+            // label="Email"
             rules={[{ required: true, message: "Please input your email!" }]}
           >
             <Input
               placeholder="Email"
-              className="placeholder-black placeholder-opacity-75"
+              disabled
+              className="placeholder-black placeholder-opacity-75 lg:w-3/5 w-full"
               style={style}
             />
           </Form.Item>
 
           <Form.Item
             name="phone"
-            rules={[{ required: true, message: "Please input your phone number!" }]}
-            
-           >
-            <PhoneInput country={"in"}
-             inputStyle={mobileStyle as React.CSSProperties}
-            placeholder="Phone Number" />
-          </Form.Item>
-
-          <Form.Item
-            name="country"
-            rules={[{ required: true, message: "Please select your country!" }]}
+            rules={[
+              { required: true, message: "Please input your phone number!" },
+            ]}
           >
-            <ReactFlagsSelect
-              placeholder="Select nationality"
-              searchable
-              searchPlaceholder="Search for a country"
-              className="  md:w-60 w-36 lg:w-72 "
-              selected={selected}
-              
-              onSelect={(code) => {
-                setSelected(code);
-                form.setFieldsValue({ country: code });
-              }}
+            <PhoneInput
+              country={"in"}
+              inputStyle={mobileStyle as React.CSSProperties}
+              placeholder="Phone Number"
+              containerClass="lg:w-3/5 w-full"
             />
           </Form.Item>
         </div>
-
-               
-              </Form>
-              <div className="flex flex-col   md:flex-row justify-between lg:mt-20">
-                <Form.Item>
-                  <Button 
-                   className="bg-blue-500 hover:bg-blue-700 text-white  lg:py-2 lg:px-4  lg:w-32 lg:h-10 rounded-full"
-                  onClick={handleCancel}>cancel</Button>
-                </Form.Item>
-                <Form.Item className="form-footer">
-                  <Button type="primary"
-                   className="  lg:h-10 rounded-full"
-                  htmlType="submit" 
-                  onClick={form.submit}
-                  icon={<ArrowRightOutlined />}>
-                    Save and countinue
-                  </Button>
-                </Form.Item>
-                </div>
+      </Form>
+      <div className="flex flex-col md:flex-row items-center justify-between  lg:mt-32 lg:gap-4">
+        <Form.Item>
+          <Button
+            className="bg-blue-500 hover:bg-blue-700 text-white lg:py-2 lg:px-4 lg:w-32 lg:h-10  md:w-auto rounded-full"
+            onClick={handleCancel}
+          >
+            Cancel
+          </Button>
+        </Form.Item>
+        <Form.Item className="form-footer">
+          <Button
+            type="primary"
+            className="lg:h-10 w-full md:w-auto rounded-full"
+            htmlType="submit"
+            onClick={form.submit}
+            icon={<ArrowRightOutlined />}
+          >
+            Save and continue
+          </Button>
+        </Form.Item>
+      </div>
     </div>
   );
 }
