@@ -1,0 +1,12 @@
+@import "tailwindcss/base";
+@import "tailwindcss/components";
+@import "tailwindcss/utilities";
+
+*{
+    @apply transition-colors duration-200;
+}
+
+.dark-theme{
+    --primary-color: #000000;
+    --secondary-color: #ffffff;
+}

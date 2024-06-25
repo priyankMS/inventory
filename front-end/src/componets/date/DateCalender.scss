@@ -1,0 +1,53 @@
+.float-input-light {
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    &:focus,
+    &:hover {
+      label {
+        color:rgb(68, 66, 66);
+      }
+    }
+  
+    .floating-input {
+      width: 100%;
+      height: 30px;
+      border-radius: 0;
+      border-bottom:1px solid  rgb(121, 121, 121) !important ;
+   
+      &:focus,
+      &:hover {
+        border-bottom: 1px solid  rgb(121, 121, 121) !important;
+      }
+  
+      &.error-border {
+        border-bottom: 1px solid red !important;
+      }
+      .ant-select-selector .ant-select-selection-search-input {
+        height: 30px !important;
+        caret-color: transparent;
+      }
+    }
+  
+    label {
+      color:dimgrey;
+      font-size: 14px;
+      font-weight: normal;
+      position: absolute;
+      pointer-events: none;
+      left: 5px;
+      top: 5px;
+      transition: 0.2s ease all;
+      -moz-transition: 0.2s ease all;
+      -webkit-transition: 0.2s ease all;
+      &.floating {
+        transform: translate(0, -25px);
+      }
+  
+      &.error-label {
+        color:firebrick !important;
+      }
+    }
+  }
+
+  
