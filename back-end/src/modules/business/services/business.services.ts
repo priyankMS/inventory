@@ -53,17 +53,18 @@ export class BusinessService {
     async getOne(user: any, id: string) {
         try {
             const userId = await this.userModel.findOne({ email: user.email });
+            console.log(userId._id);
+    
             const business = await this.businessModel.findOne({ _id: id, createdBy: userId._id }).populate(populateOption);
-            
+    
             if (!business) {
                 throw new NotFoundException(`Business with ID ${id} not found`);
             }
             return business;
         } catch (error) {
-            throw new HttpException('Error retrieving business', HttpStatus.INTERNAL_SERVER_ERROR);
+            throw error; // rethrow the original error
         }
     }
-
     async getAll(user: any) {
         try {
             const userId = await this.userModel.findOne({ email: user.email });

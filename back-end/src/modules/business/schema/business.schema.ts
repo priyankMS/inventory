@@ -8,16 +8,16 @@ export class Business {
     companyname: string;
 
     @Prop({ unique: true, required: true })
-    emails: string;
+    email: string;
 
     @Prop({ unique: true, required: true })
-    gstnumber: string;
+    gst: string;
 
     @Prop({ unique: true, required: true })
-    mobailnumber: Number;
+    phone: Number;
 
     @Prop({ required: true })
-    Address: string;
+    address: string;
 
     @Prop({ type: mongoose.Schema.Types.ObjectId, ref: 'User' })
     createdBy?: User;

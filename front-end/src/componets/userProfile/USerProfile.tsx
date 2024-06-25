@@ -3,10 +3,7 @@ import { Button, Form, FormProps, Input, message } from "antd";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
 import { ArrowRightOutlined } from "@ant-design/icons";
-import {
-  useGetUserByIdQuery,
-  useUpdateUserMutation,
-} from "../../services/Singup";
+import {useGetUserByIdQuery, useUpdateUserMutation,} from "../../services/Singup";
 import { jwtDecode } from "jwt-decode";
 
 type FieldType = {
@@ -65,10 +62,16 @@ function UserProfile({ setSelectedMenu }: UserProfileProps) {
         mobileNumber: values.phone,
       };
       if (!formData) throw new Error("No data found");
-      await updateUser({ id, updatedUser: newUser }).unwrap();
-      setSelectedMenu("business");
-      message.success("User Details Added Successfully");
-      refetch();
+       if(formData.fullname === newUser.fullname && formData.phone === newUser.mobileNumber){
+        message.info("No changes made");
+        setSelectedMenu("business");
+        return;}
+        else{
+          await updateUser({ id, updatedUser: newUser }).unwrap();
+          setSelectedMenu("business");
+          message.success("User Details Added Successfully");
+          refetch();
+        }
     } catch (error) {
       console.log("Failed:", error);
     }

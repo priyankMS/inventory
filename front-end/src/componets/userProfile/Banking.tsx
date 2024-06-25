@@ -1,6 +1,6 @@
 import { Button, Form, FormProps, Input, message } from "antd";
 import "react-phone-input-2/lib/style.css";
-// import { useCreateBankMutation } from "../../services/Bank";
+import { useCreateBankMutation } from "../../services/Banking";
 import { useState } from "react";
 
 type FieldType = {
@@ -22,7 +22,7 @@ const style = {
   outline: "none",
   borderRadius: "0px",
   padding: "2px 0px",
-  width: "100%",
+ 
 };
 
 function Banking({
@@ -31,13 +31,13 @@ function Banking({
   setSelectedMenu: React.Dispatch<React.SetStateAction<string>>;
 }) {
   const [form] = Form.useForm();
-  // const [createBank] = useCreateBankMutation();
+  const [createBank] = useCreateBankMutation();
   const [loading, setLoading] = useState(false);
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     setLoading(true);
     try {
-      // await createBank(values).unwrap();
+      await createBank(values).unwrap();
       message.success("Banking Details Added Successfully");
       setSelectedMenu("summary");
       console.log("Success:", values);
@@ -72,7 +72,7 @@ function Banking({
         onFinishFailed={onFinishFailed}
         autoComplete="off"
       >
-        <div className="grid lg:mt-10 grid-cols-1 gap-4 md:grid-cols-3 lg:px-4 lg:gap-4">
+        <div className="grid lg:mt-10 grid-cols-1  md:grid-cols-2 lg:grid-cols-3 lg:px-4 lg:gap-4">
           <div className="relative z-0 w-full mb-6 group">
             <Form.Item
               name="accountNumber"
@@ -82,7 +82,7 @@ function Banking({
             >
               <Input
                 placeholder="Account Number"
-                className="placeholder-black placeholder-opacity-75"
+                className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
                 style={style}
               />
             </Form.Item>
@@ -97,7 +97,7 @@ function Banking({
             >
               <Input
                 placeholder="IFSC Code"
-                className="placeholder-black placeholder-opacity-75"
+                className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
                 style={style}
               />
             </Form.Item>
@@ -112,7 +112,7 @@ function Banking({
             >
               <Input
                 placeholder="Bank Name"
-                className="placeholder-black placeholder-opacity-75"
+                className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
                 style={style}
               />
             </Form.Item>
@@ -126,7 +126,7 @@ function Banking({
             >
               <Input
                 placeholder="State"
-                className="placeholder-black placeholder-opacity-75"
+                className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
                 style={style}
               />
             </Form.Item>
@@ -140,7 +140,7 @@ function Banking({
             >
               <Input
                 placeholder="City"
-                className="placeholder-black placeholder-opacity-75"
+                className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
                 style={style}
               />
             </Form.Item>
@@ -154,7 +154,7 @@ function Banking({
             >
               <Input
                 placeholder="Address"
-                className="placeholder-black placeholder-opacity-75"
+                className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
                 style={style}
               />
             </Form.Item>

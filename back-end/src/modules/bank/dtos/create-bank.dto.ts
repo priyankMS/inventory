@@ -1,16 +1,29 @@
-import { IsNotEmpty, IsString, Length } from 'class-validator';
+// create-bank.dto.ts
+import { IsNotEmpty, IsString, MinLength } from 'class-validator';
 
 export class CreateBankDto {
     @IsNotEmpty()
     @IsString()
-    readonly bankName: string;
+    bankName: string;
 
     @IsNotEmpty()
     @IsString()
-    @Length(11, 11)
-    readonly ifscCode: string;
+    @MinLength(11)
+    ifsccode: string;
 
     @IsNotEmpty()
     @IsString()
-    readonly accountNumber: string;
+    accountNumber: string;
+
+    @IsNotEmpty()
+    @IsString()
+    city: string;
+
+    @IsNotEmpty()
+    @IsString()
+    state: string;
+
+    @IsNotEmpty()
+    @IsString()
+    address: string;
 }

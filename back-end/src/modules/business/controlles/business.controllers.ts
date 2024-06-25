@@ -26,6 +26,8 @@ export class BusinessController {
     @UseGuards(AuthGuard('jwt'))
     @Get('/getOne/:id')
     async getOne(@Req() req: any, @Param('id') id: string) {
+       console.log("id", id);
+       
         const user = req.user;
         return this.businessService.getOne(user, id);
     }

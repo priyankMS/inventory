@@ -7,17 +7,17 @@ export class CreateBusinessDto {
 
     @IsNotEmpty()
     @IsEmail()
-    readonly emails: string;
+    readonly email: string;
 
     @IsNotEmpty()
     @Matches(/^[a-zA-Z0-9]{15}$/, { message: 'GST number must be exactly 15 alphanumeric characters long' })
-    readonly gstnumber: string;
+    readonly gst: string;
 
     @IsNotEmpty()
     @IsString()
-    readonly mobailnumber: string;
+    readonly phone: string;
 
     @IsNotEmpty()
     @IsString()
-    readonly Address: string;
+    readonly address: string;
 }

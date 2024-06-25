@@ -7,16 +7,22 @@ import { orderlistApi } from "../services/Orderlist";
 import { resetPasswordApi } from "../services/ResetPassword";
 import { companyApi } from "../services/Company";
 import authReducer from "../services/slice/authslice";
+import { bankApi } from "../services/Banking";
+import { businessApi } from "../services/Business";
 
 export const store = configureStore({
   reducer: {
-    auth:authReducer,
+    auth: authReducer,
     [signupApi.reducerPath]: signupApi.reducer,
     [loginApi.reducerPath]: loginApi.reducer,
     [resetPasswordApi.reducerPath]: resetPasswordApi.reducer,
     [productApi.reducerPath]: productApi.reducer,
     [orderlistApi.reducerPath]: orderlistApi.reducer,
     [companyApi.reducerPath]: companyApi.reducer,
+    [businessApi.reducerPath]: businessApi.reducer,
+    [bankApi.reducerPath]: bankApi.reducer,
+
+
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware().concat(
@@ -25,7 +31,10 @@ export const store = configureStore({
       resetPasswordApi.middleware,
       productApi.middleware,
       orderlistApi.middleware,
-      companyApi.middleware
+      companyApi.middleware,
+      businessApi.middleware,
+      bankApi.middleware,
+
     ),
 });
 
