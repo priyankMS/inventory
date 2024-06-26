@@ -164,7 +164,7 @@ function UserProfile({ setSelectedMenu }: UserProfileProps) {
           </Form.Item>
         </div>
       </Form>
-      <div className="flex flex-col md:flex-row items-center justify-between  lg:mt-32 lg:gap-4">
+      <div className="flex flex-col mt-10 md:flex-row items-center justify-between  lg:mt-32 lg:gap-4">
         <Form.Item>
           <Button
             className="bg-blue-500 hover:bg-blue-700 text-white lg:py-2 lg:px-4 lg:w-32 lg:h-10  md:w-auto rounded-full"

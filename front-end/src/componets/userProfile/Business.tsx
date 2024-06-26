@@ -30,15 +30,8 @@ const style = {
 };
 
 const mobileStyle = {
- 
-  
-  '@media (max-width: 600px)': { 
-    width: "50%",
-  },
-  '@media (min-width: 600px)': {
-    width: "100%",
-  },
-}
+  width: "100%",
+};  
 
 
 function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.SetStateAction<string>>;}) {
@@ -223,9 +216,9 @@ function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.Se
 
           </Form>
 
-        <div className="flex flex-col md:flex-row  gap-3 justify-between lg:mt-28">
+        <div className="flex flex-col md:flex-row  gap-3 justify-between items-center mt-10 lg:mt-28">
           <Button
-            className="bg-blue-500 hover:bg-blue-700 text-white   lg:h-10 rounded-full"
+            className="bg-blue-500 hover:bg-blue-700 text-white  w-[100px]   lg:h-10 rounded-full"
             onClick={handleReset}
           >
             Cancel
@@ -235,7 +228,7 @@ function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.Se
             <Button
               type="default"
               onClick={() => setSelectedMenu("profile")}
-              className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 py-2 px-4 rounded-full"
+              className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 lg:py-2 lg:px-4 rounded-full"
             >
               Previous
             </Button>
@@ -243,7 +236,7 @@ function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.Se
             <Button
               htmlType="submit"
               onClick={form.submit}
-              className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 py-2 px-4 rounded-full"
+              className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 lg:py-2 lg:px-4 rounded-full"
             >
               Save and Continue
             </Button>

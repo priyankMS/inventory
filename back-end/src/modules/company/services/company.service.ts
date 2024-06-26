@@ -5,7 +5,7 @@ import { Company } from '../schema/company.schema';
 import { CompanyDto, UpdateCompanyDto } from '../dtos/company.dto';
 
 @Injectable()
-export class CompanyService {
+export class CompanyService { 
   constructor(
     @InjectModel(Company.name) private companyModel: Model<Company>,
   ) {}

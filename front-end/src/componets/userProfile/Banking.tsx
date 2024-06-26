@@ -73,7 +73,7 @@ function Banking({
         autoComplete="off"
       >
         <div className="grid lg:mt-10 grid-cols-1  md:grid-cols-2 lg:grid-cols-3 lg:px-4 lg:gap-4">
-          <div className="relative z-0 w-full mb-6 group">
+          <div className="relative z-0 w-full  group">
             <Form.Item
               name="accountNumber"
               rules={[
@@ -88,7 +88,7 @@ function Banking({
             </Form.Item>
           </div>
 
-          <div className="relative z-0 w-full mb-6 group">
+          <div className="relative z-0 w-full  group">
             <Form.Item
               name="ifsccode"
               rules={[
@@ -103,7 +103,7 @@ function Banking({
             </Form.Item>
           </div>
 
-          <div className="relative z-0 w-full mb-6 group">
+          <div className="relative z-0 w-full  group">
             <Form.Item
               name="bankName"
               rules={[
@@ -117,7 +117,7 @@ function Banking({
               />
             </Form.Item>
           </div>
-          <div className="relative z-0 w-full mb-6 group">
+          <div className="relative z-0 w-full group">
             <Form.Item
               name="state"
               rules={[
@@ -131,7 +131,7 @@ function Banking({
               />
             </Form.Item>
           </div>
-          <div className="relative z-0 w-full mb-6 group">
+          <div className="relative z-0 w-full  group">
             <Form.Item
               name="city"
               rules={[
@@ -145,7 +145,7 @@ function Banking({
               />
             </Form.Item>
           </div>
-          <div className="relative z-0 w-full mb-6 group">
+          <div className="relative z-0 w-full  group">
             <Form.Item
               name="address"
               rules={[
@@ -162,9 +162,9 @@ function Banking({
         </div>
       </Form>
 
-      <div className="flex flex-col md:flex-row gap-3 justify-between lg:mt-20">
+      <div className="flex flex-col md:flex-row gap-3 justify-between items-center lg:mt-20">
         <Button
-          className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 rounded-full"
+          className="bg-blue-500 hover:bg-blue-700 w-[100] text-white lg:h-10 rounded-full"
           onClick={handleReset}
           disabled={loading}
         >
@@ -175,7 +175,7 @@ function Banking({
           <Button
             type="default"
             onClick={() => setSelectedMenu("business")}
-            className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 py-2 px-4 rounded-full"
+            className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 lg:py-2 lg:px-4 rounded-full"
             disabled={loading}
           >
             Previous
@@ -184,7 +184,7 @@ function Banking({
           <Button
             htmlType="submit"
             onClick={form.submit}
-            className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 py-2 px-4 rounded-full"
+            className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 lg:py-2 lg:px-4 rounded-full"
             loading={loading}
           >
             Save and Continue

@@ -8,7 +8,7 @@ export class Bank {
     bankName: string;
 
     @Prop({ unique: true, required: true })
-    ifscCode: string;
+    ifsccode: string;
 
     @Prop({ unique: true, required: true })
     accountNumber: string;

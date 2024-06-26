@@ -147,11 +147,11 @@ const AppBar = () => {
     {
       key: "0",
       label: (
-        <Space   className=" border-b-[1px] flex gap-4 p-1">
+        <Space   className=" border-b-[1px] flex p-1">
           <Avatar className="bg-lime-600 w-10 h-10 ">{username[0]}</Avatar>
           <div className=" flex flex-col">
             <Text className=" font-semibold">{username}</Text>
-            <Text type="secondary" className=" text-sm">{email}</Text>
+            <Text type="secondary" className=" text-xs">{email}</Text>
           </div>
         </Space>
       ),
@@ -163,7 +163,7 @@ const AppBar = () => {
           className=" border-b-[1px] flex gap-4 p-1"
           onClick={() => setSelectedMenu("mainbar")}
         >
-          {<UserAddOutlined />} Profile
+          {<UserAddOutlined />}edit Profile
         </div>
       ),
     },

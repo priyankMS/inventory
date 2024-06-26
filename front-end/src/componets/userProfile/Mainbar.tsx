@@ -51,14 +51,16 @@
         )
 
         console.log(selectedMenu);
+
+        
         
         return (
             <Layout className=" bg-transparent">
                 <Header 
                   
-                className="flex  sm:w-[350px] bg-transparent  p-0  justify-between  sticky  ">
+                className="flex  sm:w-[350px] bg-transparent  lg:h-[50px] p-0  justify-between  sticky  ">
                     <Menu
-                        className=" w-[100px] h-10 md:h-full sm:w-full   bg-neutral-300 justify-around  rounded-full  flex  items-center"
+                        className=" w-[100px] h-10 md:h-full sm:w-full   border-b-0	  bg-neutral-200 justify-around  rounded-full  flex  items-center"
                         theme="light"
                          mode="horizontal"
                               
@@ -85,6 +87,7 @@
                         <Menu.Item
                             key="banking"
                             style={{ backgroundColor: selectedMenu === "banking" ? "white" : "" ,borderRadius: "50px", height: "43px",display:"flex",alignItems:"center"}}
+                             
                             icon={<BankOutlined />}
                         >
                             Banking
