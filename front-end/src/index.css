@@ -2,20 +2,21 @@
 @import "tailwindcss/components";
 @import "tailwindcss/utilities";
 
-*{
-    @apply transition-colors duration-200;
+* {
+  @apply transition-colors duration-200;
 }
 
-.dark-theme{
-    --primary-color: #000000;
-    --secondary-color: #ffffff;
+.dark-theme {
+  --primary-color: #000000;
+  --secondary-color: #ffffff;
 }
 
 .ant-menu-item-selected {
-    border-bottom: none !important;
-    box-shadow: none !important;
-  }
+  border-bottom: none !important;
+  box-shadow: none !important;
+}
 
-  .ant-menu-item::after {
-    border-bottom: none !important;
-  }
+.ant-menu-item::after {
+  border-bottom: none !important;
+}
+

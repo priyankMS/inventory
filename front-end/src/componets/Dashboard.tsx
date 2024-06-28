@@ -35,7 +35,10 @@ const Dashboard: React.FC = () => {
     data: orders,
     isLoading: orderLoading,
     refetch: refetchOrders,
-  } = useGetAllOrderlistQuery({}, { refetchOnMountOrArgChange: true });
+  } = useGetAllOrderlistQuery({
+    page:0,
+    limit:0
+  }, { refetchOnMountOrArgChange: true });
   const {
     data: products,
     isLoading: productLoading,
@@ -49,7 +52,7 @@ const Dashboard: React.FC = () => {
 
   const totalCompany = company?.length || 0;
   const totalOrderQuantity = orders?.length || 0;
-
+  
   const [lowStockProduct, setLowStockProduct] = useState<ProductInterface[]>([]);
   const screen = useBreakpoint();
   const [selectedDate, setSelectedDate] = useState<string[] | null>(null);
@@ -73,32 +76,33 @@ const Dashboard: React.FC = () => {
     memoizedRefetchCompanies();
   }, [memoizedRefetchOrders, memoizedRefetchProducts, memoizedRefetchCompanies]);
 
-  const stripTime = (date: string) => {
+  const stripTime = (date) => {
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
     return newDate;
   };
 
   
-
-  useEffect(() => {
-    if (selectedDate && products) {
-      const [startDate, endDate] = selectedDate;
-      const filteredProducts = products.filter(product => {
-        const updatedAt = stripTime(product.updatedAt);
-        return updatedAt >= stripTime(startDate) && updatedAt <= stripTime(endDate);
+ console.log("sele");
+ 
+   useEffect(()=>{
+    if (selectedDate) {
+      const startDate = stripTime(new Date(selectedDate[0]));
+      const endDate = stripTime(new Date(selectedDate[1]));
+      const filteredData = lowStockProduct.filter(product => {
+        const updatedAt = stripTime(new Date(product.updatedAt));
+        return updatedAt >= startDate && updatedAt <= endDate;
       });
-      setLowStockProduct(filteredProducts);
+      setLowStockProduct(filteredData);
     }
-  }, [selectedDate, products]);
+    
+   },[lowStockProduct, products, selectedDate])
 
-  const handleChange = useCallback(
-    (name: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value = e.target.value;
-      setState(prevState => ({ ...prevState, [name]: value }));
-    },
-    []
-  );
+   const handleChange = useCallback((name:string) => (e:React.FormEvent<HTMLInputElement>) => {
+    const value = (e.target as HTMLInputElement)?.value ?? e;
+    setState((prevState) => ({ ...prevState, [name]: value }));
+  }, []);
+  
 
   const handleOpenChange = () => setOpen(prevOpen => !prevOpen);
 
@@ -173,7 +177,7 @@ const Dashboard: React.FC = () => {
   const handleSearch = (value: string) => {
     if (value) {
       const searchProduct = products?.filter(product =>
-        product.description.toLowerCase().includes(value.toLowerCase())
+        product.productsname.toLowerCase().includes(value.toLowerCase())
       );
       setLowStockProduct(searchProduct);
     } else {
@@ -229,7 +233,7 @@ const Dashboard: React.FC = () => {
       <div className="flex flex-col lg:flex-row justify-between items-center p-4">
         <Space
           direction="horizontal"
-          className="grid grid-cols-2 sm:grid-cols-2 lg:flex gap-4"
+          className="grid grid-cols-2 sm:grid-cols-4 lg:flex gap-4"
           size="middle"
           wrap
         >
@@ -253,7 +257,7 @@ const Dashboard: React.FC = () => {
           />
           <DashboardShow
             title="Products Under 500"
-            value={lowStockProduct.length}
+            value={lowStockProduct?.length}
             icon={<FallOutlined className="text-2xl md:text-3xl xl:text-4xl" />}
             bgColor="bg-teal-100"
           />
@@ -277,8 +281,8 @@ const Dashboard: React.FC = () => {
           </Popover>
         </Space>
       </div>
-      <div className="md:flex-row flex flex-col gap-5">
-        <div className="md:w-[60%]">
+      <div className="lg:flex-row    flex flex-col gap-5">
+        <div className="lg:w-[60%]">
           {screen.md ? (
             <Table
               columns={columns}

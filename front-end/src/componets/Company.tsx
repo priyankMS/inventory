@@ -12,62 +12,77 @@ import {
   Popover,
   Col,
   Row,
+  Tooltip,
+  Table,
+  Tag,
+  TableColumnsType,
 } from "antd";
-import { DeleteOutlined} from "@ant-design/icons";
+import { DeleteOutlined, DeleteRowOutlined } from "@ant-design/icons";
 import { useGetAllProductsQuery } from "../services/Productlist";
 import {
   useCreateCompanyMutation,
   useDeleteCompanyMutation,
   useGetAllCompanyQuery,
+  useGetCompanyBypaginationQuery,
   useUpdateCompanyMutation,
 } from "../services/Company";
 import { companyDetails } from "../interface/companyInterface";
 
-// dayjs.extend(customParseFormat);
+
 import { FaFilter } from "react-icons/fa";
 import DateShow from "./date/DateShow";
 import { DateRange, state } from "../interface/orderlistInterface";
-import { ProductInterface, productSearchInterface } from "../interface/ProuductInerface";
+import {
+  ProductInterface,
+  productSearchInterface,
+} from "../interface/ProuductInerface";
+
+import { MdDelete } from "react-icons/md";
 
 const { Option } = Select;
 const { useBreakpoint } = Grid;
 
 const Company = () => {
   const { data, isLoading, error, refetch } = useGetAllCompanyQuery({});
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5,
+  });
+  const { data: companyData } = useGetCompanyBypaginationQuery({
+    page: pagination.page,
+    limit: pagination.limit,
+  });
+  console.log("companyData", companyData);
+
   const [createCompany] = useCreateCompanyMutation();
   const [editCompany] = useUpdateCompanyMutation();
   const [deleteCompany] = useDeleteCompanyMutation();
-  const [selectedDate, setSelectedDate] = useState<string[] | null>(null); 
+  const [selectedDate, setSelectedDate] = useState<string[] | null>(null);
   const [open, setOpen] = useState<boolean>(false);
   const [state, setState] = useState<state>({
     startDate: "",
     endDate: "",
   });
 
-  const {
-    data: products,
-    isLoading: productLoading,
-  } = useGetAllProductsQuery({});
+  const { data: products, isLoading: productLoading } = useGetAllProductsQuery(
+    {}
+  );
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [selected, setSelected] = useState<string>();
   const [createCompanyModalVisible, setCreateCompanyModalVisible] =
     useState<boolean>(false);
   const screens = useBreakpoint();
   const [form] = Form.useForm();
-  const [allCompanyData, setAllCompanyData] = useState<companyDetails[]>([]||data); 
+  const [allCompanyData, setAllCompanyData] = useState<companyDetails[]>([]);
 
   const { confirm } = Modal;
+  console.log("allCompanyData", allCompanyData);
 
- 
-  
   useEffect(() => {
-    if (data) { 
-      setAllCompanyData(data);
+    if (companyData) {
+      setAllCompanyData(companyData);
     }
-  }, [data]);
-
-  
-  
+  }, [companyData]);
 
   const handleCreateCompanyModal = () => {
     setCreateCompanyModalVisible(true);
@@ -88,9 +103,6 @@ const Company = () => {
     [form]
   );
 
-
-  
-
   const handleDelete = (id: string) => {
     confirm({
       title: "Are you sure you want to delete this company?",
@@ -103,7 +115,7 @@ const Company = () => {
           message.error("Failed to delete product!");
         }
       },
-      onCancel() { },
+      onCancel() {},
     });
   };
 
@@ -160,25 +172,21 @@ const Company = () => {
     }
   };
 
-
- 
-
   const handleSearch = (value: string) => {
     if (!value) {
       setAllCompanyData(data);
     } else {
       const regex = new RegExp(value, "i");
-      const filteredData = data.filter((company:productSearchInterface) => {
-        return regex.test(company.company) ||
-          company.products.some((product) => regex.test(product));
+      const filteredData = data.filter((company: productSearchInterface) => {
+        return (
+          regex.test(company.company) ||
+          company.products.some((product) => regex.test(product))
+        );
       });
       setAllCompanyData(filteredData);
     }
   };
 
-
- 
-  
   const stripTime = (date) => {
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
@@ -189,7 +197,7 @@ const Company = () => {
     if (selectedDate) {
       const startDate = stripTime(new Date(selectedDate[0]));
       const endDate = stripTime(new Date(selectedDate[1]));
-      const filteredData = data.filter( (company) => {
+      const filteredData = data.filter((company) => {
         const itemDate = stripTime(new Date(company.date));
         return itemDate >= startDate && itemDate <= endDate;
       });
@@ -199,14 +207,13 @@ const Company = () => {
     }
   }, [selectedDate, data]);
 
-
- 
-
- const handleChange = useCallback((name:string) => (e:React.FormEvent<HTMLInputElement>) => {
-  const value = (e.target as HTMLInputElement)?.value ?? e;
-  setState((prevState) => ({ ...prevState, [name]: value }));
-}, []);
-
+  const handleChange = useCallback(
+    (name: string) => (e: React.FormEvent<HTMLInputElement>) => {
+      const value = (e.target as HTMLInputElement)?.value ?? e;
+      setState((prevState) => ({ ...prevState, [name]: value }));
+    },
+    []
+  );
 
   const handleOpenChange = () => {
     setOpen(!open);
@@ -218,22 +225,16 @@ const Company = () => {
     setSelectedDate([startDate, endDate]);
     setOpen(false);
   }, [state]);
-  
-  
+
   const handleReset = () => {
     setState({ startDate: "", endDate: "" });
     setSelectedDate(null);
   };
-  
-
-
-
-
 
   const chartFilterInput = useMemo(() => {
     const { startDate, endDate } = state;
 
-    const input:DateRange[] = [
+    const input: DateRange[] = [
       {
         name: "startDate",
         label: "From Date(MM/DD/YYYY)",
@@ -252,40 +253,129 @@ const Company = () => {
       },
     ];
     return input;
-  }, [ state]);
+  }, [state]);
 
+  const content = useMemo(
+    () => (
+      <Col className="p-2  w-52 ">
+        {chartFilterInput.map((item, index) => (
+          <Col key={index} className="pb-8 mt-2">
+            <DateShow
+              size="large"
+              onChange={handleChange(item.name)}
+              disabled={false}
+              {...item}
+            />
+          </Col>
+        ))}
+        <Row gutter={16}>
+          <Col span={12}>
+            <Button type="default" onClick={handleReset} size="middle">
+              Reset
+            </Button>
+          </Col>
+          <Col span={12}>
+            <Button type="primary" onClick={handleSubmitDates} size="middle">
+              Submit
+            </Button>
+          </Col>
+        </Row>
+      </Col>
+    ),
+    [chartFilterInput, handleChange, handleSubmitDates]
+  );
 
-  const content = useMemo(() => (
-    <Col className="p-2  w-52 ">
-      {chartFilterInput.map((item, index) => (
-        <Col key={index} className="pb-8 mt-2">
-          <DateShow
-            size="large"
-            onChange={handleChange(item.name)}
-            disabled={false}
-            {...item}
-          />
-        </Col>
-      ))}
-      <Row gutter={16}>
-        <Col span={12}>
-          <Button type="default" onClick={handleReset} size="middle">
-            Reset
-          </Button>
-        </Col>
-        <Col span={12}>
-          <Button type="primary" onClick={handleSubmitDates} size="middle">
-            Submit
-          </Button>
-        </Col>
-      </Row>
-    </Col>
-  ), [chartFilterInput, handleChange, handleSubmitDates]);
+  console.log("products", products);
+  console.log("data", data);
 
+  const getProductQuantity = (productName: string) => {
+    const product = products.find((prod) => prod.productsname === productName);
+    return product ? product.quantity : 0;
+  };
 
+  const columns: TableColumnsType = [
+    {
+      title: "No",
+      width: 50,
 
+      dataIndex: "_id",
+      render: (_, __, index) => index + 1,
+      key: "_id",
+      className: "text-center",
+    },
+    {
+      title: "Company Name",
+      dataIndex: "company",
+      key: "companyname",
+      align: "center",
+      className: "text-center",
+    },
+    {
+      title: "Product",
+      dataIndex: "products",
+      key: "products",
+      align: "center",
+      render: (products) => (
+        <div className="flex flex-wrap justify-center">
+          {products.map((tag) => {
+            const quantity = getProductQuantity(tag);
+            const color =
+              quantity < 100 ? "red" : quantity < 200 ? "orange" : "green";
+            return (
+              <Tag color={color} className="m-1" key={tag}>
+                {tag.toUpperCase()}
+              </Tag>
+            );
+          })}
+        </div>
+      ),
+    },
+    {
+      title: "Date",
+      dataIndex: "date",
+      render: (date) => new Date(date).toLocaleDateString(),
+      align: "center",
+      className: "text-center",
+    },
+    {
+      title: "Action",
+      key: "action",
+      render: (_, record) => (
+        <Space size="middle" align="center" className="flex justify-center">
+          <Tooltip title="Edit">
+            <Button
+              className="bg-blue-500 hover:bg-blue-700 text-white rounded"
+              icon={<DeleteRowOutlined />}
+              onClick={() => handleEditModal(record)}
+            >
+              Edit
+            </Button>
+          </Tooltip>
+          <Tooltip title="Delete">
+            <Button
+              className="bg-red-500 hover:bg-red-700 text-white rounded"
+              icon={<MdDelete />}
+              onClick={() => handleDelete(record._id)}
+            >
+              Delete
+            </Button>
+          </Tooltip>
+        </Space>
+      ),
+    },
+  ];
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    setPagination({
+      page,
+      limit: pageSize,
+    });
+  };
 
- 
+  const totalPage = useMemo(() => {
+    const totalData = selectedDate ? allCompanyData.length : data?.length;
+    return totalData;
+  }, [allCompanyData, selectedDate, data]);
+
   if (isLoading)
     return (
       <div className="h-full flex justify-center items-center">
@@ -295,10 +385,12 @@ const Company = () => {
   if (error) return <p>Error: {"data" in error}</p>;
 
   return (
-    <div className="dark:bg-gray-700 dark:border-gray-600 dark:text-white h-full overflow-hidden w-full">
-      <div className="flex justify-between  items-center mb-4 max-md:flex max-md:flex-col md:flex md:justify-around">
-        <h2 className="dark:text-white max-md:w-full font-serif   md:text-xl ">Company</h2>
-         
+    <div className="dark:bg-gray-700  dark:border-gray-600 dark:text-white h-full overflow-hidden w-full lg:p-4">
+      <div className="flex justify-between lg:p-2 items-center mb-4 max-md:flex max-md:flex-col md:flex md:justify-around">
+        <h2 className="dark:text-white max-md:w-full font-serif   md:text-xl ">
+          Company
+        </h2>
+
         <Input
           type="text"
           id="small-input"
@@ -315,84 +407,57 @@ const Company = () => {
         </Button>
 
         <Popover
-      content={content}
-      trigger="click"
-      placement="bottomRight"
-      open={open}
-       
-      onOpenChange={handleOpenChange}
-    >
-    
-    <FaFilter cursor="pointer" /> 
-    </Popover>
+          content={content}
+          trigger="click"
+          placement="bottomRight"
+          open={open}
+          onOpenChange={handleOpenChange}
+        >
+          <FaFilter cursor="pointer" />
+        </Popover>
       </div>
 
       {screens.md ? (
-        <div className="overflow-y-auto" style={{ maxHeight: "calc(100vh - 200px)" }}>
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
-              <tr>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  ID
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Company Name
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Products
-                </th>
-                <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Date
-                </th>
-                <th scope="col" colSpan={2} className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200 overflow-y-auto">
-              {allCompanyData?.map((item: companyDetails, index: number) => (
-                <tr key={item._id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {index + 1}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.company}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {item.products.map((product: string) => (
-                      <div key={product}>{product}</div>
-                    ))}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    {item.date.slice(0, 10)}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                    <Space size="middle">
-                      <Button onClick={() => handleEditModal(item)}>Edit</Button>
-                      <Button
-                        type="primary"
-                        danger
-                        icon={<DeleteOutlined />}
-                        onClick={() => handleDelete(item._id)}
-                      >
-                        Delete
-                      </Button>
-                    </Space>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div
+          className="overflow-y-auto"
+          style={{ maxHeight: "calc(100vh - 200px)" }}
+        >
+          <Table
+            sticky
+            scroll={{ y: 270, scrollToFirstRowOnChange: true }}
+            //  className="min-w-full  divide-gray-200"
+            pagination={{
+              pageSize: pagination.limit,
+              total: totalPage,
+              showSizeChanger: true,
+              showTotal: (total, range) =>
+                `${range[0]}-${range[1]} of ${total} items`,
+              defaultPageSize: 5,
+              onShowSizeChange: (page, pageSize) => {
+                handlePaginationChange(page, pageSize);
+              },
+              pageSizeOptions: ["5", "10", "15", "20"],
+            }}
+            columns={columns}
+            dataSource={allCompanyData}
+          />
         </div>
       ) : (
-        <div className="overflow-y-auto  h-[500px] space-y-4">
+        <div
+          className="overflow-y-auto   space-y-4"
+          style={{ maxHeight: "calc(100vh - 300px)" }}
+        >
           {allCompanyData?.map((item: companyDetails) => (
-            <Card key={item._id} className="bg-white rounded-lg shadow-md dark:bg-gray-700 p-4">
+            <Card
+              key={item._id}
+              className="bg-white rounded-lg shadow-md dark:bg-gray-700 p-4"
+            >
               <div className="mb-2">
                 <b>Company Name:</b> {item.company}
               </div>
               <div className="mb-2">
-                <b className="tracking-wide">Products Name:</b> {item.products.join(", ")}
+                <b className="tracking-wide">Products Name:</b>{" "}
+                {item.products.join(", ")}
               </div>
               <div className="mb-2">
                 <b>Date:</b> {item.date.slice(0, 10)}
@@ -417,8 +482,6 @@ const Company = () => {
         </div>
       )}
 
-
-
       <Modal
         title="Create Company"
         open={createCompanyModalVisible}
@@ -429,13 +492,17 @@ const Company = () => {
           <Form.Item
             label="Company Name"
             name="company"
-            rules={[{ required: true, message: "Please input the company name!" }]}
+            rules={[
+              { required: true, message: "Please input the company name!" },
+            ]}
           >
             <Input />
           </Form.Item>
           <Form.Item
             name={"products"}
-            rules={[{ required: true, message: "Select a product", type: "array" }]}
+            rules={[
+              { required: true, message: "Select a product", type: "array" },
+            ]}
           >
             <Select
               mode="multiple"

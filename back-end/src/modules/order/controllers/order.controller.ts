@@ -5,6 +5,7 @@ import {
     Inject,
     Param,
     Post,
+    Query,
     Req,
     UploadedFile,
     UseInterceptors,
@@ -42,9 +43,9 @@ import { CreateOrderlistDto } from '../dtos/create-orderlist.dto';
     }
   
     @Get('getall')
-    findAll(@Req() req: Request) {
-      return this.orderService.findAll(req.user);
-    }
+  findAll(@Req() req: Request, @Query('page') page: number = 1, @Query('limit') limit: number = 5) {
+    return this.orderService.findAll(req.user, page, limit);
+  }
   
     @Get('getone/:id')
     findOne(@Param('id') id: string) {

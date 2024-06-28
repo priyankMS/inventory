@@ -1,0 +1,123 @@
+
+.ant-table-container::after {
+  width: 5px !important;
+}
+
+.ant-table-container::after {
+  width: 5px !important;
+}
+
+.ant-table-container::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+.ant-table-container::-webkit-scrollbar-thumb {
+  background-color: #000000 !important;
+}
+
+::-webkit-scrollbar {
+  width: 5px !important;
+}
+
+.ant-table-body::-webkit-scrollbar {
+  width: 5px !important;
+  height: 5px !important;
+}
+
+.ant-table-body::-webkit-scrollbar-thumb {
+  background: #888 !important;
+  border-radius: 5px !important;
+}
+
+.ant-table-body::-webkit-scrollbar-thumb:hover {
+  background: #555 !important;
+}
+
+.ant-table-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 5px;
+}
+
+.ant-table-body {
+  scrollbar-width: auto;
+  scrollbar-color: auto;
+}
+
+.ant-table-body::-webkit-scrollbar {
+  width: 4px;
+}
+
+.ant-table-body::-webkit-scrollbar-track {
+  background-color: #e1e6e6;
+}
+
+.ant-table-body::-webkit-scrollbar-thumb {
+  border-radius: 6px;
+  background-color: green;
+}
+
+
+
+/* custom-pagination.css */
+
+/* Customize the pagination container */
+.ant-pagination {
+  display: flex;
+  justify-content: end !important;
+  margin-top: 20px;
+  font-size: 13px !important;
+
+}
+
+/* Customize individual pagination items */
+.ant-pagination-item {
+  margin-top: 3px !important;
+ padding: 0 !important;
+ height: 25px !important;
+ width: 25px !important;
+ min-width: 25px !important;
+  line-height:24px !important;
+ margin-inline-end: 0px !important;
+ text-align: center !important;
+ margin-inline: 2px !important;
+ padding-inline: 0px !important ;
+ row-gap: 5px !important;
+ font-size: 13px !important;
+}
+.ant-pagination-total-text{
+  margin-inline-end: 0px !important;
+  padding-inline: 4px 0 !important ;
+}
+
+.ant-pagination-prev, .ant-pagination-next{
+  margin-inline: 0px !important;
+  padding-inline:  0 !important ;
+}
+
+
+/* Customize the active pagination item */
+.ant-pagination-item-active {
+  background-color: #1890ff;
+  color: white;
+  border: none;
+}
+
+/* Customize the previous and next buttons */
+.ant-pagination-prev .ant-pagination-item-link,
+.ant-pagination-next .ant-pagination-item-link {
+  color: #1890ff;
+  border: none;
+}
+
+.ant-pagination-prev .ant-pagination-item-link:hover,
+.ant-pagination-next .ant-pagination-item-link:hover {
+  color: white;
+  background-color: #1890ff;
+}
+
+.ant-pagination-options{
+  margin-inline-start: 5px !important;
+}
+.ant-select-selector{
+  font-size: 14px !important;
+}

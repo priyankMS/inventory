@@ -188,7 +188,7 @@ const AppBar = () => {
   ];
 
   return (
-    <div className={theme}>
+    <div className={`${theme}  h-[100vh]` }>
       <Token />
       <Layout className="  h-screen flex flex-col md:flex-row">
         <Sider
@@ -246,7 +246,7 @@ const AppBar = () => {
               </Dropdown>
             </div>
           </Header>
-          <Content className="m-4 p-4  overflow-auto  bg-white dark:bg-slate-900 shadow rounded">
+          <Content className="m-4     bg-white dark:bg-slate-900 shadow rounded">
             {renderContent()}
           </Content>
         </Layout>

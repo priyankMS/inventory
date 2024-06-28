@@ -26,8 +26,8 @@ export const orderlistApi = createApi({
     }),
 
     getAllOrderlist: builder.query({
-      query: () => ({
-        url: "/order/getall",
+      query: ({page,limit}) => ({
+        url: `/order/getall?page=${page}&limit=${limit}`,
         method: "GET",
       }),
     }),

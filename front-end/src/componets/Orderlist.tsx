@@ -14,7 +14,6 @@ import {
   Card,
   Grid,
   Spin,
-  
   Popover,
   Col,
   Row,
@@ -51,17 +50,31 @@ import {
 } from "../interface/orderlistInterface";
 
 import DateShow from "./date/DateShow";
-
+import "../style/orderlist.css";
 dayjs.extend(customParseFormat);
 import { FaFilter } from "react-icons/fa";
 const { Option } = Select;
 const { useBreakpoint } = Grid;
 
 const Orderlist = () => {
-  const { data, isLoading, error, refetch } = useGetAllOrderlistQuery({});
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5,
+  });
+
+  const { data, isLoading, error, refetch } = useGetAllOrderlistQuery({
+    page: pagination.page,
+    limit: pagination.limit,
+  });
+  const { data: totalOrderList, refetch: refetchorder } =
+    useGetAllOrderlistQuery({
+      page: 0,
+      limit: 0,
+    });
+
   const {
     data: products,
-   
+
     refetch: productRefetch,
   } = useGetAllProductsQuery({});
 
@@ -74,7 +87,7 @@ const Orderlist = () => {
   const [selectedOrder, setSelectedOrder] = useState<selectorderDetails>();
   const [selectedProducts, setSelectedProducts] = useState<any>([]);
   const [selectedCompany, setSelectedCompany] = useState<string>();
- 
+
   const [visibleProduct, setVisibleProduct] = useState<boolean>(false);
   const [isRepeatOrder, setIsRepeatOrder] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string[] | null>(null);
@@ -83,6 +96,8 @@ const Orderlist = () => {
   const [showProductsTable, setShowProductsTable] = useState<string[]>([]);
   const [open, setOpen] = useState<boolean>(false);
 
+  console.log("filter data ",filteredData);
+  
   const [state, setState] = useState<state>({
     startDate: "",
     endDate: "",
@@ -100,14 +115,12 @@ const Orderlist = () => {
       selectedProducts.includes(null)
     ) {
       const filteredProducts = selectedProducts.filter(
-        (product:selectedProduct) => product !== undefined && product !== null
+        (product: selectedProduct) => product !== undefined && product !== null
       );
       setSelectedProducts(filteredProducts);
     }
   }, [selectedProducts]);
 
-   console.log("selectedProducts",selectedProducts);
-   
   const stripTime = (date: string) => {
     const newDate = new Date(date);
     newDate.setHours(0, 0, 0, 0);
@@ -117,7 +130,7 @@ const Orderlist = () => {
   useEffect(() => {
     if (selectedDate) {
       const [startDate, endDate] = selectedDate;
-      const filteredData = allData.filter((order) => {
+      const filteredData = totalOrderList?.filter((order) => {
         const orderDate = stripTime(order.date);
         return (
           orderDate >= stripTime(startDate) && orderDate <= stripTime(endDate)
@@ -127,7 +140,9 @@ const Orderlist = () => {
     } else {
       setFilteredData(allData);
     }
-  }, [selectedDate, allData]);
+  }, [selectedDate, allData, totalOrderList]);
+  console.log("filter data ,",filteredData);
+  
 
   const screens = useBreakpoint();
   const [form] = Form.useForm();
@@ -148,13 +163,10 @@ const Orderlist = () => {
 
   const handleRepeatOrder = useCallback(
     (record: repeateOrder) => {
-     
-      
       const newSelectedProducts = record.orderdetail.map(
         (order: orderDetail) => ({
           productname: order.productname,
           quantity: order.quantity,
-         
         })
       );
       setIsRepeatOrder(true);
@@ -168,7 +180,7 @@ const Orderlist = () => {
   const handleCreateOrderCancel = useCallback(() => {
     setSelectedProducts([]);
     setShowProductsTable([]);
-  
+
     form.resetFields();
     setCreateOrderModalVisible(false);
     setVisibleProduct(false);
@@ -177,12 +189,12 @@ const Orderlist = () => {
   useEffect(() => {
     if (selectedCompany) {
       const selectedCompanyData = company.find(
-        (company:companyOrderList) => company.company === selectedCompany
+        (company: companyOrderList) => company.company === selectedCompany
       );
       if (selectedCompanyData) {
         const products = selectedCompanyData.products;
         setSelectedProducts(
-          products.map((product:orderDetail) => ({
+          products.map((product: orderDetail) => ({
             productname: product,
             quantity: 0,
           }))
@@ -193,15 +205,14 @@ const Orderlist = () => {
     }
   }, [selectedCompany, company]);
 
-
   const handleCreateOrderlist = async () => {
     try {
       const values = await form.validateFields();
       const { companyname } = values;
 
-      const updatedProducts = selectedProducts.map((product:orderDetail) => ({
+      const updatedProducts = selectedProducts.map((product: orderDetail) => ({
         productname: product.productname,
-        quantity: product.quantity, 
+        quantity: product.quantity,
       }));
       // for (const product of orderdetail) {
       //   const availableProduct = products.find(
@@ -233,9 +244,10 @@ const Orderlist = () => {
       message.success("Order list created successfully.");
       setCreateOrderModalVisible(false);
       setSelectedProducts([]);
-     
+
       form.resetFields();
       refetch();
+      refetchorder();
       setVisibleProduct(false);
       productRefetch();
     } catch (error) {
@@ -254,6 +266,7 @@ const Orderlist = () => {
       );
     });
   }, [company]);
+  console.log("okey");
 
   const columns: TableColumnsType = [
     {
@@ -262,12 +275,13 @@ const Orderlist = () => {
       key: "_id",
       render: (_: any, __: order, index: number) => index + 1,
       width: 50,
+      className:"text-center"
     },
     {
       title: "Company Name",
       dataIndex: "companyname",
       key: "companyname",
-      width: 400,
+      width: 200,
       align: "center",
     },
     {
@@ -275,12 +289,13 @@ const Orderlist = () => {
       dataIndex: "date",
       key: "date",
       render: (createdAt: string) => new Date(createdAt).toLocaleDateString(),
-      width: 250,
+      width: 200,
       align: "center",
     },
     {
       title: "Action",
       width: 200,
+      className: "flex justify-center items-center",
       key: "action",
       render: (_: any, record: any) => (
         <Space size="middle" align="center">
@@ -305,7 +320,7 @@ const Orderlist = () => {
           </Tooltip>
           <Tooltip>
             <Button
-              type="primary"
+              className="bg-blue-500 hover:bg-blue-700 text-white  rounded"
               icon={<PlusOutlined />}
               onClick={() => handleRepeatOrder(record)}
             >
@@ -335,14 +350,12 @@ const Orderlist = () => {
   };
 
   const handleChange = useCallback(
-    (name:string) => (e:any) => {   
+    (name: string) => (e: any) => {
       const value = e?.target?.value ?? e;
-      setState((prevState: { 
-        
-        startDate: string; 
-        endDate: string; 
-      
-      }) => ({ ...prevState, [name]: value }));
+      setState((prevState: { startDate: string; endDate: string }) => ({
+        ...prevState,
+        [name]: value,
+      }));
     },
     []
   );
@@ -365,7 +378,7 @@ const Orderlist = () => {
 
   const chartFilterInput: DateRange[] = useMemo(() => {
     const { startDate, endDate } = state;
-  
+
     const input: DateRange[] = [
       {
         name: "startDate",
@@ -433,6 +446,18 @@ const Orderlist = () => {
       setSelectedProducts(newProducts);
     }
   };
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    setPagination({
+      page,
+      limit: pageSize,
+    });
+  };
+
+  const totalPage = useMemo(()=>{
+    const totalData =  selectedDate ? filteredData.length : totalOrderList?.length || 0;
+    return totalData
+  },[filteredData?.length, selectedDate, totalOrderList?.length])
+
 
   if (isLoading)
     return (
@@ -444,7 +469,7 @@ const Orderlist = () => {
   if (error) return <p>Error: {"data" in error}</p>;
 
   return (
-    <div className="w-full   h-full overflow-hidden">
+    <div className="w-full lg:p-4   h-full overflow-hidden">
       <div className="flex justify-between">
         <h2 className="dark:text-white">Order List</h2>
 
@@ -468,18 +493,36 @@ const Orderlist = () => {
       </Button>
 
       {screens.md ? (
-        <Table
-          columns={columns}
-          pagination={false}
-          sticky
-          rowClassName="bg-white hover:bg-gray-100"
-          scroll={{ y: "calc(100vh - 300px)" }}
-          dataSource={filteredData}
-        />
+        <div className="custom-scrollbar">
+          <Table
+            className="p-2 self-start"
+            columns={columns}
+            pagination={{
+              pageSize: pagination.limit,
+              // total: totalOrderList?.length || 0,
+              total: totalPage,
+              showTotal: (total, range) =>
+                ` ${range[0]}-${range[1]} of ${total} items`,
+              onChange: (page, pageSize) => {
+                handlePaginationChange(page, pageSize);
+              },
+              defaultPageSize: 5,
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "15", "20"],
+            }}
+            sticky
+            rowClassName="bg-white hover:bg-gray-100"
+            scroll={{ y: 270, scrollToFirstRowOnChange: true }}
+            dataSource={filteredData}
+          />
+        </div>
       ) : (
         <>
-          <div className="max-h-96  overflow-y-auto dark:bg-slate-700">
-            {filteredData?.map((item) => (
+          <div
+            className="  overflow-y-auto dark:bg-slate-700"
+            style={{ maxHeight: "calc(100vh - 300px)" }}
+          >
+            {( selectedDate ? filteredData : totalOrderList)?.map((item) => (
               <Card
                 key={item._id}
                 className="bg-white rounded-lg shadow-md dark:bg-gray-700   mb-4"
@@ -590,16 +633,18 @@ const Orderlist = () => {
                 </thead>
 
                 <tbody>
-                  {selectedProducts.map((orderDetail:orderDetail, index:number) => (
-                    <tr key={index} className="hover:bg-gray-100">
-                      <td className="p-2 border border-gray-300 text-center">
-                        {orderDetail?.productname}
-                      </td>
-                      <td className="p-2 border border-gray-300 text-center">
-                        {orderDetail?.quantity}
-                      </td>
-                    </tr>
-                  ))}
+                  {selectedProducts.map(
+                    (orderDetail: orderDetail, index: number) => (
+                      <tr key={index} className="hover:bg-gray-100">
+                        <td className="p-2 border border-gray-300 text-center">
+                          {orderDetail?.productname}
+                        </td>
+                        <td className="p-2 border border-gray-300 text-center">
+                          {orderDetail?.quantity}
+                        </td>
+                      </tr>
+                    )
+                  )}
                 </tbody>
               </table>
             </Form.Item>
@@ -652,15 +697,19 @@ const Orderlist = () => {
                               {product}
                             </td>
                             <td className="p-2 border border-gray-300 text-center">
-                              {products.find((p:{productsname:string}) => p.productsname === product)
-                                ?.quantity || 0}
+                              {products.find(
+                                (p: { productsname: string }) =>
+                                  p.productsname === product
+                              )?.quantity || 0}
                             </td>
                             <td className="p-2 border border-gray-300 text-center">
                               <InputNumber
                                 name="quantity"
                                 min={1}
                                 max={
-                                  products.find(  (p:{productsname:string}) => p.productsname === product
+                                  products.find(
+                                    (p: { productsname: string }) =>
+                                      p.productsname === product
                                   )?.quantity || 0
                                 }
                                 onChange={(value) => {
@@ -703,8 +752,14 @@ const Orderlist = () => {
                           placeholder="Select product"
                           onChange={(value) => handleProductChange(value, key)}
                         >
-                          {products.filter((p:{productsname:string }) =>  !showProductsTable.some( (sp) => sp === p.productsname ))
-                            .map((p:{productsname:string }) => (
+                          {products
+                            .filter(
+                              (p: { productsname: string }) =>
+                                !showProductsTable.some(
+                                  (sp) => sp === p.productsname
+                                )
+                            )
+                            .map((p: { productsname: string }) => (
                               <Option
                                 key={p.productsname}
                                 value={p.productsname}
@@ -719,7 +774,7 @@ const Orderlist = () => {
                           {" "}
                           stock:{" "}
                           {products.find(
-                            (p:{productsname:string }) =>
+                            (p: { productsname: string }) =>
                               p.productsname ===
                               selectedProducts[selectedProducts.length - 1]
                                 ?.productname
@@ -735,7 +790,7 @@ const Orderlist = () => {
                           min={1}
                           max={
                             products.find(
-                              (p:{productsname:string }) =>
+                              (p: { productsname: string }) =>
                                 p.productsname ===
                                 selectedProducts[selectedProducts.length - 1]
                                   ?.productname

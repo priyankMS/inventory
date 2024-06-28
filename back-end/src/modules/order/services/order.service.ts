@@ -56,17 +56,20 @@ export class OrderService {
     return 'Invoice added successfully';
   }
 
-  async findAll(user: any): Promise<Orderlist[]> {
+  async findAll(user: any, page: number = 1, limit: number = 10): Promise<Orderlist[]> {
     try {
+      const skip = (page - 1) * limit;
       return await this.orderListModel
         .find({ createdBy: user.id })
+        .skip(skip)
+        .limit(limit)
         .populate(populateOption);
     } catch (error) {
       throw new HttpException(
         'Error getting products',
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
-    }
+    } 
   }
 
   async findOne(id: string): Promise<Orderlist> {

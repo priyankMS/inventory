@@ -1,0 +1,8 @@
+{
+  "dependencies": {
+    "@coreui/coreui": "^5.0.2",
+    "@coreui/icons-react": "^2.2.1",
+    "@coreui/react": "^5.1.0",
+    "styled-components": "^6.1.11"
+  }
+}

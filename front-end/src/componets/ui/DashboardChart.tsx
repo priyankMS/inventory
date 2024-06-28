@@ -6,7 +6,10 @@ import { useGetAllOrderlistQuery } from "../../services/Orderlist";
 
 const DashboardChart: React.FC = () => {
   
- const {data:orderlist} = useGetAllOrderlistQuery({}, {refetchOnMountOrArgChange:true});
+ const {data:orderlist} = useGetAllOrderlistQuery({
+  page:0,
+  limit:0
+ }, {refetchOnMountOrArgChange:true});
   
     const [chartData, setChartData] = useState([]);
 
@@ -35,8 +38,8 @@ const DashboardChart: React.FC = () => {
       <Chart
         options={{
           type: "interval",
-          width: 400,
-          height: 400,
+          width: 350,
+          height: 300,
           data: chartData,
           encode: {
             x: "companyname",

@@ -32,16 +32,23 @@ export const companyApi = createApi({
       }),
     }),
 
+   getCompanyBypagination: builder.query({
+      query: ({ page, limit }) => ({
+        url: `/company/getall?page=${page}&limit=${limit}`,
+        method: "GET",
+      }),
+   }),
+
     updateCompany: builder.mutation({
       query: ({ id, updatedCompany }) => {
-        console.log('updateCompany:', id, updatedCompany); // <--- Add this line
+        console.log('updateCompany:', id, updatedCompany); 
         return {
           url: `/company/update/${id}`,
           method: "PUT",
           body: updatedCompany,
         };
       },
-    }),
+    }), 
 
     deleteCompany: builder.mutation({
       query: (id) => ({
@@ -57,4 +64,5 @@ export const {
   useGetAllCompanyQuery,
   useUpdateCompanyMutation,
   useDeleteCompanyMutation,
+  useGetCompanyBypaginationQuery,
 } = companyApi;

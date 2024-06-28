@@ -128,9 +128,9 @@ const Product = () => {
     );
 
   return (
-    <div className="w-full h-full p-4">
+    <div className="w-full h-full p-4 overflow-hidden">
       <div className="flex justify-between items-center mb-4 max-md:flex max-md:flex-col md:flex md:justify-around">
-        <h2 className="dark:text-white max-md:w-full">Product</h2>
+        <h3 className="dark:text-white  max-md:w-full">Product</h3>
         <Input
           type="text"
           id="small-input"
@@ -147,14 +147,15 @@ const Product = () => {
         </Button>
       </div>
       {isMobile ? (
-        <div
-          className="space-y-4  overflow-y-auto dark:bg-slate-700"
-          style={{ maxHeight: "calc(100vh - 200px)" }}
+        <div>
+          <div
+          className="  overflow-y-auto dark:bg-slate-700"
+          style={{ maxHeight: "calc(100vh - 300px)" }}
         >
           {allProductData.map((product: formDataProduct, index: number) => (
             <Card
               key={product._id}
-              className=" border rounded-lg shadow-md dark:text-white"
+              className=" border mb-1 rounded-lg shadow-md dark:text-white"
             >
               <div>
                 <strong>ID:</strong> {index + 1}
@@ -188,6 +189,7 @@ const Product = () => {
               </div>
             </Card>
           ))}
+        </div>
         </div>
       ) : (
         <div
@@ -223,7 +225,7 @@ const Product = () => {
                 </th>
                 <th
                   scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
+                  className="px-6 flex justify-center py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
                 >
                   Action
                 </th>
@@ -244,7 +246,7 @@ const Product = () => {
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                     {product.quantity}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                  <td className="px-6 flex justify-center py-4 whitespace-nowrap text-sm font-medium">
                     <Button
                       type="primary"
                       onClick={() => handleEdit(product)}
