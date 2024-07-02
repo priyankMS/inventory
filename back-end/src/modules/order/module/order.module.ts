@@ -24,6 +24,11 @@ import { UserModule } from 'src/modules/user/module/user.module';
       provide: ORDER_SERVICE,
       useClass: OrderService,
     },
+    OrderService
   ],
+    exports:[
+        OrderService,
+       MongooseModule
+    ]
 })
 export class OrderModule {}

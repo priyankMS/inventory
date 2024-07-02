@@ -25,8 +25,8 @@ export const productApi = createApi({
       }),
     }),
     getAllProducts: builder.query({
-      query: () => ({
-        url: "/product/findall",
+      query: ({page,limit}) => ({
+        url: `/product/findall?page=${page}&limit=${limit}`,
         method: "GET",
       }),
     }),

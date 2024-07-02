@@ -7,9 +7,10 @@ import {
     Param,
     Post,
     Put,
+    Query,
     Req,
   } from '@nestjs/common';
-  import { Request } from 'express';
+
   import { PRODUCT_SERVICE } from 'src/token';
 import { ProductService } from '../services/product.service';
 import { User } from 'src/modules/guards/public.decorator';
@@ -32,8 +33,12 @@ import { UpdateProductDto } from '../dtos/update-product.dto';
     }
   
     @Get('findall')
-    getAll(@User() user: accessPayload) {
-      return this.productService.getAll(user);
+    getAll(
+      @User() user: accessPayload,
+      @Query('page') page: number = 1,
+      @Query('limit') limit: number = 5,
+    ) {
+      return this.productService.getAll(user, page, limit);
     }
   
     @Put('updateproducts/:id')

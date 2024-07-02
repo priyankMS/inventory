@@ -4,13 +4,13 @@ export const signupApi = createApi({
   reducerPath: "signupApi",
   baseQuery: fetchBaseQuery({
     baseUrl: "http://localhost:3000",
-    prepareHeaders:(headers)=>{
+    prepareHeaders: (headers) => {
       const token = sessionStorage.getItem("accessToken");
-      if(token){
+      if (token) {
         headers.set("Authorization", `Bearer ${token}`);
       }
       return headers;
-    }
+    },
   }),
   endpoints: (builder) => ({
     signup: builder.mutation({
@@ -29,25 +29,20 @@ export const signupApi = createApi({
 
     getUserById: builder.query({
       query: ({ id }) => {
-        console.log("getUserById:", id);
-        
         return {
           url: `/user/getone/${id}`,
           method: "GET",
           responseHandler: (response) => {
-            console.log("getUserById response:", response);
             return response.json().then((data) => {
-              console.log("getUserById data:", data);
               return data;
             });
-          }
+          },
         };
       },
     }),
 
     updateUser: builder.mutation({
       query: ({ id, updatedUser }) => {
-        console.log("updateCompany:", id, updatedUser);
         return {
           url: `/user/update/${id}`,
           method: "PATCH",

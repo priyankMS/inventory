@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Inject, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Inject,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { USER_SERVICE } from 'src/token';
 import { UserService } from '../services/user.service';
 import { Public } from 'src/modules/guards/public.decorator';
@@ -10,7 +18,7 @@ import { UpdateUserDto } from '../dtos/update-user.dto';
 export class UserController {
   constructor(
     @Inject(USER_SERVICE) private readonly userService: UserService,
-  ) { }
+  ) {}
 
   @Public()
   @Post('signup')
@@ -18,23 +26,23 @@ export class UserController {
     return this.userService.createUser(createUser);
   }
 
-
-  @Get("getall")
+  @Get('getall')
   async findAll(): Promise<User[]> {
     return this.userService.getAllUsers();
   }
-
 
   @Get('getone/:id')
   async findOne(@Param('id') id: string): Promise<User> {
     return this.userService.getUserById(id);
   }
 
-
   @Patch('update/:id')
-  async update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto): Promise<User> {
-    console.log("updateUserDto:", updateUserDto);
-    
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserDto: UpdateUserDto,
+  ): Promise<User> {
+    console.log('updateUserDto:', updateUserDto);
+
     return this.userService.updateUser(id, updateUserDto);
   }
 

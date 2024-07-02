@@ -8,6 +8,7 @@ import {
     Post,
     Put,
     Req,
+    Res,
     UseGuards,
 } from '@nestjs/common';
 import { BankService } from '../services/bank.service';
@@ -16,6 +17,7 @@ import { BANK_SERVICE } from 'src/token';
 import { Bank } from '../schema/bank.schema';
 import { UpdateBankDto } from '../dtos/update-bank.dto';
 import { AuthGuard } from '@nestjs/passport';
+import { Response } from 'express';
 
 @Controller('banks')
 export class BankController {
@@ -49,5 +51,17 @@ export class BankController {
         return this.bankService.update(id, updateBankDto);
     }
 
+    @UseGuards(AuthGuard('jwt'))
+    @Get('/dummy-invoice')
+    async generateDummyInvoice(@Res() res: Response,@Req() req:any): Promise<void> {
+        const pdf = await this.bankService.generateInvoice(req.user);
 
+        res.set({
+            'Content-Type': 'application/pdf',
+            'Content-Length': pdf.length,
+            'Content-Disposition': 'attachment; filename=dummy-invoice.pdf',
+        });
+
+        res.send(pdf);
+    }
 }

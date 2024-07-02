@@ -24,8 +24,19 @@ export class CompanyService {
     }
   }
 
-  async getAll(user: any): Promise<Company[]> {
-    return await this.companyModel.find({ createdBy: user.id });
+  async getAll(user: any, page: number = 1, limit: number = 10): Promise<Company[]> {
+    try {
+      const skip = (page - 1) * limit;
+      return await this.companyModel
+        .find({ createdBy: user.id })
+        .skip(skip)
+        .limit(limit);
+    } catch (error) {
+      throw new HttpException(
+        'Unable to fetch company records',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
   }
 
   async updateCompany(

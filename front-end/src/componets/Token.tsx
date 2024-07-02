@@ -6,7 +6,10 @@ import { useNavigate } from "react-router-dom";
 
 export default function Token() {
   const { refetch: orderRefetch } = useGetAllOrderlistQuery({});
-  const { refetch: productRefetch } = useGetAllProductsQuery({});
+  const { refetch: productRefetch } = useGetAllProductsQuery({
+    page:0,
+    limit:0
+  });
   const navigate = useNavigate();
   useEffect(() => {
     const setupTokenRefresh = async () => {

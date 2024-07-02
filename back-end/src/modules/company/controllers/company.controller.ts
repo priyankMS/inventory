@@ -9,6 +9,7 @@ import {
     Param,
     Post,
     Put,
+    Query,
     Req,
   } from '@nestjs/common';
   import { Request } from 'express';
@@ -31,11 +32,14 @@ import { CompanyDto, UpdateCompanyDto } from '../dtos/company.dto';
     }
   
   
-  
+
     @Get('getall')
-    getAll(@Req() req: Request) {
-      return this.companyService.getAll(req.user);
+    getAll(@Req() req: Request, @Query('page') page: number = 1, @Query('limit') limit: number = 10) {
+      return this.companyService.getAll(req.user, page, limit);
     }
+
+    
+
     @Put('update/:id')
     async updateCompany(
       @Req() req: Request,

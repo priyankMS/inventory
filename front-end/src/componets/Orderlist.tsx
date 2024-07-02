@@ -31,7 +31,7 @@ import {
   useCreateOrderlistMutation,
 } from "../services/Orderlist";
 import { useGetAllProductsQuery } from "../services/Productlist";
-import { order } from "../types";
+
 import axios from "axios";
 import { useGetAllCompanyQuery } from "../services/Company";
 import dayjs from "dayjs";
@@ -76,7 +76,10 @@ const Orderlist = () => {
     data: products,
 
     refetch: productRefetch,
-  } = useGetAllProductsQuery({});
+  } = useGetAllProductsQuery({
+    page:0,
+    limit:0
+  });
 
   const { data: company } = useGetAllCompanyQuery({});
   const [createOrderlist] = useCreateOrderlistMutation();
@@ -96,8 +99,7 @@ const Orderlist = () => {
   const [showProductsTable, setShowProductsTable] = useState<string[]>([]);
   const [open, setOpen] = useState<boolean>(false);
 
-  console.log("filter data ",filteredData);
-  
+
   const [state, setState] = useState<state>({
     startDate: "",
     endDate: "",
@@ -130,7 +132,7 @@ const Orderlist = () => {
   useEffect(() => {
     if (selectedDate) {
       const [startDate, endDate] = selectedDate;
-      const filteredData = totalOrderList?.filter((order) => {
+      const filteredData = totalOrderList?.filter((order:orderListDetails) => {
         const orderDate = stripTime(order.date);
         return (
           orderDate >= stripTime(startDate) && orderDate <= stripTime(endDate)
@@ -273,7 +275,7 @@ const Orderlist = () => {
       title: "ID",
       dataIndex: "_id",
       key: "_id",
-      render: (_: any, __: order, index: number) => index + 1,
+      render: (_, __, index) => index + 1,
       width: 50,
       className:"text-center"
     },
@@ -297,7 +299,7 @@ const Orderlist = () => {
       width: 200,
       className: "flex justify-center items-center",
       key: "action",
-      render: (_: any, record: any) => (
+      render: (_, record) => (
         <Space size="middle" align="center">
           <Tooltip title="View">
             <Button
@@ -469,7 +471,7 @@ const Orderlist = () => {
   if (error) return <p>Error: {"data" in error}</p>;
 
   return (
-    <div className="w-full lg:p-4   h-full overflow-hidden">
+    <div className="w-full p-4   h-full overflow-hidden">
       <div className="flex justify-between">
         <h2 className="dark:text-white">Order List</h2>
 
@@ -499,7 +501,7 @@ const Orderlist = () => {
             columns={columns}
             pagination={{
               pageSize: pagination.limit,
-              // total: totalOrderList?.length || 0,
+            
               total: totalPage,
               showTotal: (total, range) =>
                 ` ${range[0]}-${range[1]} of ${total} items`,
@@ -522,7 +524,7 @@ const Orderlist = () => {
             className="  overflow-y-auto dark:bg-slate-700"
             style={{ maxHeight: "calc(100vh - 300px)" }}
           >
-            {( selectedDate ? filteredData : totalOrderList)?.map((item) => (
+            {( selectedDate ? filteredData : totalOrderList)?.map((item:orderListDetails) => (
               <Card
                 key={item._id}
                 className="bg-white rounded-lg shadow-md dark:bg-gray-700   mb-4"

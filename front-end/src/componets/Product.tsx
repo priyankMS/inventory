@@ -1,5 +1,5 @@
-import { useState, useMemo, useCallback } from "react";
-import { Button, Modal, Form, Input, InputNumber, message, Card } from "antd";
+import { useState, useCallback, useLayoutEffect, useEffect } from "react";
+import { Button, Modal, Form, Input, InputNumber, message, Card, TableColumnType, Table } from "antd";
 import { DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
 import {
   useGetAllProductsQuery,
@@ -19,33 +19,56 @@ const Product = () => {
     description: "",
     quantity: 0,
   });
+  const [isSearch, setIsSearch] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [form] = Form.useForm();
-  const { data, isLoading, refetch } = useGetAllProductsQuery({});
+  const [pagination,setPagination]=useState({
+    page:1,
+    limit:5
+  })
+  const { data, isLoading, refetch } = useGetAllProductsQuery({
+    page:pagination.page,
+    limit:pagination.limit
+  });
+  const [totalpages,setTotalPages]=useState<number>(0)
+  const {data:totalProduct,refetch:totalRefetch}=useGetAllProductsQuery({
+    page:0,
+    limit:0
+  })
   const [createProduct] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
-  const [searchValue, setSearchValue] = useState("");
+  const [allProduct, setAllProduct] = useState([]);
+ 
   const isMobile = useMediaQuery({ maxWidth:  786 });
 
-  const allProductData = useMemo(() => {
-    if (!data) return [];
-    if (!searchValue) return data;
 
-    const regex = new RegExp(searchValue, "i");
-    return data.filter((product: formDataProduct) => {
-      return (
-        regex.test(product.productsname) ||
-        regex.test(product.quantity.toString())
-      );
-    });
-  }, [data, searchValue]);
+  useEffect(()=>{
+    if(data){
+      setAllProduct(data)
+    }
+  
+  },[data])
 
-  console.log("data product", data);
-  console.log("form data", formData);
+  const handleSearch = (value: string) => {
+    if(!value){
+      setIsSearch(false)
+      setAllProduct(data)
+    } else {
+      const regex = new  RegExp(value,"i")
+      const filteredData = totalProduct?.filter((product:formDataProduct)=>regex.test(product.productsname) || regex.test(product.quantity.toString()))
+       setAllProduct(filteredData)
+        setIsSearch(true)
+        setTotalPages(filteredData?.length)
+    }
+  }
   
 
-  const memoizedRefetch = useCallback(() => { refetch();}, [refetch]);
+
+
+  
+
+  const memoizedRefetch = useCallback(() => { refetch(),totalRefetch();}, [refetch,totalRefetch]);
 
   const handleCreate = async () => {
     try {
@@ -62,6 +85,7 @@ const Product = () => {
     }
   };
 
+  
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
@@ -116,9 +140,83 @@ const Product = () => {
     setIsModalVisible(true);
   };
 
-  const handleSearch = (value: string) => {
-    setSearchValue(value);
+  
+
+  
+  
+
+  const columns:TableColumnType =[
+    {
+      title:"NO",
+      dataIndex:"_id",
+      render: (_, __, index:number) => index + 1,
+      key:"_id",
+      className:"text-center",
+      width:80,
+      align:"center"
+    },
+    {
+     title:"product Name",
+     dataIndex:"productsname",
+     key:"productsname",
+     align:"center",
+     className:"text-center"
+    },
+    {
+      title:" Description",
+      dataIndex:"description",
+      key:"description",
+      align:"center",
+      className:"text-center"
+    },
+    {
+      title:"Quantity",
+      dataIndex:"quantity",
+      key:"quantity",
+      align:"center",
+      className:"text-center"
+    },
+    {
+      title: "Action",
+      dataIndex: "_id",
+      key: "_id",
+      align: "center",
+      render: (_,record:formDataProduct) => (
+        <div className="flex justify-center">
+          <Button
+            type="primary"
+            onClick={() => handleEdit(record)}
+            className="mr-2"
+          >
+            Edit
+          </Button>
+          <Button
+            type="primary"
+            danger
+            icon={<DeleteOutlined />}
+            onClick={() => handleDelete(record._id!)}
+          >
+            Delete
+          </Button>
+        </div>
+      ),
+    }
+
+  ]
+
+  const handlePaginationChange = (page: number, pageSize: number) => {
+    setPagination({
+      page,
+      limit: pageSize,
+    });
   };
+
+
+  useLayoutEffect(()=>{
+    if(!isSearch){
+      setTotalPages(totalProduct?.length)
+    }
+  },[totalProduct,isSearch])
 
   if (isLoading)
     return (
@@ -130,7 +228,7 @@ const Product = () => {
   return (
     <div className="w-full h-full p-4 overflow-hidden">
       <div className="flex justify-between items-center mb-4 max-md:flex max-md:flex-col md:flex md:justify-around">
-        <h3 className="dark:text-white  max-md:w-full">Product</h3>
+        <h3 className="dark:text-white  font-serif max-md:w-full">Product</h3>
         <Input
           type="text"
           id="small-input"
@@ -152,10 +250,12 @@ const Product = () => {
           className="  overflow-y-auto dark:bg-slate-700"
           style={{ maxHeight: "calc(100vh - 300px)" }}
         >
-          {allProductData.map((product: formDataProduct, index: number) => (
+          {
+          
+          (isSearch?allProduct:totalProduct)?.map((product: formDataProduct, index: number) => (
             <Card
               key={product._id}
-              className=" border mb-1 rounded-lg shadow-md dark:text-white"
+              className=" sm:grid-cols-2  border mb-1 rounded-lg shadow-md dark:text-white"
             >
               <div>
                 <strong>ID:</strong> {index + 1}
@@ -192,81 +292,27 @@ const Product = () => {
         </div>
         </div>
       ) : (
-        <div
-          className="overflow-y-auto"
-          style={{ maxHeight: "calc(100vh - 200px)" }}
-        >
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead className="bg-gray-50 sticky top-0 z-10">
-              <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  ID
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Product Name
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Description
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Quantity
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 flex justify-center py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Action
-                </th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {allProductData.map((product: formDataProduct, index: number) => (
-                <tr key={product._id}>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {index + 1}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.productsname}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.description}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {product.quantity}
-                  </td>
-                  <td className="px-6 flex justify-center py-4 whitespace-nowrap text-sm font-medium">
-                    <Button
-                      type="primary"
-                      onClick={() => handleEdit(product)}
-                      className="mr-2 md:pr-4"
-                    >
-                      Edit
-                    </Button>
-                    <Button
-                      type="primary"
-                      danger
-                      icon={<DeleteOutlined />}
-                      onClick={() => handleDelete(product._id!)}
-                    >
-                      Delete
-                    </Button>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        
+        <div className=" mt-10">
+          <Table
+            columns={columns}
+            dataSource={allProduct}
+            rowClassName="dark:bg-slate-700   " 
+            rowKey="_id"
+            scroll={{ y: 300, scrollToFirstRowOnChange: true }}
+            pagination={{
+             position: ["bottomCenter"],
+             pageSize:pagination.limit,
+             total:totalpages,
+             showTotal:(total,range)=>` ${range[0]} to ${range[1]} of ${total} entries`,
+             showSizeChanger:true,
+              pageSizeOptions:["5","10","15","20"],
+              onChange:(page,pageSize)=>{
+                handlePaginationChange(page,pageSize)
+              }
+            }}
+            className="w-full"
+          />
         </div>
       )}
       <Modal

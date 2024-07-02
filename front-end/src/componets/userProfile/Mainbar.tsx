@@ -50,7 +50,7 @@
             </Paragraph>
         )
 
-        console.log(selectedMenu);
+   
 
         
         
@@ -58,9 +58,9 @@
             <Layout className=" bg-transparent">
                 <Header 
                   
-                className="flex  sm:w-[350px] bg-transparent  lg:h-[50px] p-0  justify-between  sticky  ">
+                className="flex  sm:w-[350px] mt-2 ml-2 bg-transparent  lg:h-[50px] p-0 md:h-[48px] justify-between  sticky  ">
                     <Menu
-                        className=" w-[100px] h-10 md:h-full sm:w-full   border-b-0	  bg-neutral-200 justify-around  rounded-full  flex  items-center"
+                        className=" w-[100px]  h-10 md:h-full sm:w-full   border-b-0	  bg-neutral-200 justify-around  rounded-full  flex  items-center"
                         theme="light"
                          mode="horizontal"
                               
@@ -96,7 +96,7 @@
                     </Menu>
                 </Header>
                 <Content 
-                 className="bg-none"
+                 className="bg-none p-4"
                 >
                     {renderContent()}
                 </Content>

@@ -40,11 +40,14 @@ export class ProductService {
     }
   }
 
-  async getAll(user: any) {
-    const findall = await this.productModel
-      .find({ createdBy: user.id })
-      .populate(populateOption);
+  async getAll(user: any, page: number = 1, limit: number = 10) {
     try {
+      const skip = (page - 1) * limit;
+      const findall = await this.productModel
+        .find({ createdBy: user.id })
+        .skip(skip)
+        .limit(limit)
+        .populate(populateOption);
       if (!findall) {
         throw new HttpException('No products found', HttpStatus.NOT_FOUND);
       }

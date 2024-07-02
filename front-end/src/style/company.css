@@ -1,0 +1,9 @@
+@media screen and (max-width:890px){
+    .ant-table-cell{
+        padding: 5px !important;
+    }
+}
+
+.ant-table-cell{
+    padding: 13px 10px !important;
+}

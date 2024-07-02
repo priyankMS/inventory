@@ -5,10 +5,9 @@ import { useSignupMutation } from '../services/Singup';
 import { Data } from '../interface/authInterface';
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
+import svgImg from "../assets/undraw_welcome_cats_thqn.svg" 
 
 const { Title } = Typography;
-
-
 
 const SignUp = () => {
   const [form] = Form.useForm();
@@ -18,11 +17,6 @@ const SignUp = () => {
 
   const handleSubmit = async (values: Data) => {
     try {
-     
-
-    
-
-      
       const result = await signup({
         fullname: values.fullname,
         username: values.username,
@@ -31,8 +25,6 @@ const SignUp = () => {
         password: values.password,
       }).unwrap();
 
-
-     
       message.success("Signup successful!");
       form.resetFields();
       navigate("/")
@@ -43,11 +35,22 @@ const SignUp = () => {
   };
 
   return (
-    <Row justify="center" align="middle" style={{ height: '100vh', background: '#fff', borderRadius: '8px', boxShadow: '0px 4px 20px rgba(0, 0, 0, 0.1)' }}>
-      <Col xs={0} sm={8} md={12} lg={12} style={{ backgroundImage: `url('https://images.unsplash.com/photo-1718095744838-dace5469b218?q=80&w=2071&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D')`, backgroundSize: 'cover', backgroundPosition: 'center', height: '100%' }} />
-      <Col xs={24} sm={16} md={12} lg={12} style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%' }}>
-        <div style={{ width: '100%', maxWidth: '400px', padding: '1rem', }}>
-          <Title level={2} style={{ textAlign: 'center' }}>
+    <div className="flex h-screen bg-gray-100">
+      <div className="hidden md:flex md:w-1/2 lg:w-2/3 bg-teal-700 text-white items-center justify-center">
+        <div className="text-center">
+          <img src={svgImg} alt="Welcome Cats" className="w-96 mx-auto" />
+          <h1 className="text-4xl font-bold mb-4">Let's Make it Happen Together!</h1>
+          <p className="text-lg mb-4">Join us and start your journey today. We provide the best solutions to help you achieve your goals.</p>
+          <ul className="list-disc list-inside text-lg text-left mb-4">
+            <li>Professional Support</li>
+            <li>Innovative Solutions</li>
+            <li>Community Engagement</li>
+          </ul>
+        </div>
+      </div>
+      <div className="flex flex-col justify-center items-center w-full md:w-1/2 lg:w-1/3 bg-white shadow-lg p-8">
+        <div className="w-full max-w-sm">
+          <Title level={2} className="text-center mb-2 ">
             Create Account
           </Title>
           <Form
@@ -56,13 +59,14 @@ const SignUp = () => {
             onFinish={handleSubmit}
             layout="vertical"
             scrollToFirstError
+            className="space-y-4"
           >
             <Form.Item
               name="fullname"
               label="Full Name"
               rules={[{ required: true, message: 'Please input your Full Name!' }]}
             >
-              <Input prefix={<UserOutlined />} placeholder="Full Name" style={{ width: '80%' }} />
+              <Input prefix={<UserOutlined />} placeholder="Full Name" className="w-full p-2 border border-gray-300 rounded" />
             </Form.Item>
 
             <Form.Item
@@ -70,7 +74,7 @@ const SignUp = () => {
               label="Username"
               rules={[{ required: true, message: 'Please input your Username!' }]}
             >
-              <Input prefix={<UserOutlined />} placeholder="Username" style={{ width: '80%' }} />
+              <Input prefix={<UserOutlined />} placeholder="Username" className="w-full p-2  border border-gray-300 rounded" />
             </Form.Item>
 
             <Form.Item
@@ -78,43 +82,43 @@ const SignUp = () => {
               label="Email"
               rules={[{ required: true, type: 'email', message: 'Please input a valid Email!' }]}
             >
-              <Input prefix={<MailOutlined />} placeholder="Email" style={{ width: '80%' }} />
+              <Input prefix={<MailOutlined />} placeholder="Email" className="w-full p-2  border border-gray-300 rounded" />
             </Form.Item>
-
-            <Form.Item
-            name="phone"
-            rules={[
-              { required: true, message: "Please input your phone number!" },
-            ]}
-          >
-            <PhoneInput
-             
-              country={"in"}
-              placeholder="Phone Number"
-              />
-            
-          </Form.Item>
 
             <Form.Item
               name="password"
               label="Password"
               rules={[{ required: true, message: 'Please input your Password!' }]}
             >
-              <Input.Password prefix={<LockOutlined />} placeholder="Password" style={{ width: '80%' }} />
+              <Input.Password prefix={<LockOutlined />} placeholder="Password" className="w-full p-2  border border-gray-300 rounded" />
+            </Form.Item>
+            <Form.Item
+              name="phone"
+              label="Phone Number"
+              rules={[{ required: true, message: "Please input your phone number!" }]}
+            >
+              <PhoneInput
+                country={"in"}
+                placeholder="Phone Number"
+                // inputClass=" w-[200px] p-2 border border-gray-300 rounded"
+                containerClass='w-full   rounded'
+               inputStyle={{ width: "100%" }}
+              />
             </Form.Item>
 
+
             <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ width: '80%' }} loading={isLoading}>
+              <Button type="primary" htmlType="submit" className="w-full  bg-teal-600 text-white rounded" loading={isLoading}>
                 Sign Up
               </Button>
-              <Link to="/" style={{ float: 'right', marginTop: '1rem', width: '90%' }}>
+              <Link to="/" className="block text-center mt-4 text-teal-600">
                 Already have an account? Sign in
               </Link>
             </Form.Item>
           </Form>
         </div>
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 

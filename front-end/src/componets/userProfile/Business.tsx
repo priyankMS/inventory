@@ -1,11 +1,14 @@
-import { Button, Form, FormProps, Input, message, Select } from "antd";
+import { Button, Form, FormProps, Input, message } from "antd";
 import { jwtDecode } from "jwt-decode";
 import PhoneInput from "react-phone-input-2";
 import "react-phone-input-2/lib/style.css";
-import { useCreateBusinessMutation, useGetAllBusinessQuery, useGetBusinessByIdQuery, useUpdateBusinessMutation } from "../../services/Business";
-import { useEffect, useMemo, useState } from "react";
-import { useGetAllCompanyQuery } from "../../services/Company";
-import { ComapanyOrderList } from "../../interface/orderlistInterface";
+import {
+  useCreateBusinessMutation,
+  useGetAllBusinessQuery,
+  useGetBusinessByIdQuery,
+  useUpdateBusinessMutation,
+} from "../../services/Business";
+import { useEffect, useState } from "react";
 
 type FieldType = {
   companyname?: string;
@@ -25,54 +28,46 @@ const style = {
   outline: "none",
   borderRadius: "0px",
   padding: "2px 0px",
- 
- 
 };
 
 const mobileStyle = {
   width: "100%",
-};  
+};
 
-
-function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.SetStateAction<string>>;}) {
+function Business({
+  setSelectedMenu,
+}: {
+  setSelectedMenu: React.Dispatch<React.SetStateAction<string>>;
+}) {
   const accessToken = sessionStorage.getItem("accessToken");
-  const {id}: any = accessToken ? jwtDecode(accessToken) : "";
-   const [updateBusiness] = useUpdateBusinessMutation();
-   const [creatBusiness] = useCreateBusinessMutation();
-   const {data:allBusiness} = useGetAllBusinessQuery({});
-  //  console.log("allBusiness", allBusiness);
-    const {data:company}=useGetAllCompanyQuery({})
-   const findId = allBusiness?.find((business)=>(business.createdBy._id === id))._id;
-    console.log("findId", findId);
-   
-   const {data: business, refetch} = useGetBusinessByIdQuery(findId);
+  const { id }: any = accessToken ? jwtDecode(accessToken) : "";
+  const [updateBusiness] = useUpdateBusinessMutation();
+  const [creatBusiness] = useCreateBusinessMutation();
+  const { data: allBusiness } = useGetAllBusinessQuery({});
 
-  
-   
+  const findId = allBusiness?.find(
+    (business) => business.createdBy._id === id
+  )._id;
 
-   
-   
-   const [businessData, setBusinessData] = useState<FieldType>({});
+  const { data: business, refetch } = useGetBusinessByIdQuery(findId);
+
+  const [businessData, setBusinessData] = useState<FieldType>({});
 
   const [form] = Form.useForm();
- 
-  useEffect(()=>{
-    if(business){
+
+  useEffect(() => {
+    if (business) {
       const businessData = {
         companyname: business.companyname,
         address: business.address,
         email: business.email,
         phone: business.phone ? business.phone.toString() : undefined,
         gst: business.gst,
-      
-      }
+      };
       setBusinessData(businessData);
       form.setFieldsValue(businessData);
     }
-  },[business, form])
-   
- 
- 
+  }, [business, form]);
 
   const onFinish: FormProps<FieldType>["onFinish"] = async (values) => {
     try {
@@ -83,12 +78,17 @@ function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.Se
         phone: values.phone,
         gst: values.gst,
       };
-  
+
       if (!businessData) throw new Error("No data found");
       if (business) {
-        const hasChanges = Object.keys(businessData).some((key) => businessData[key] !== newBusiness[key]);
+        const hasChanges = Object.keys(businessData).some(
+          (key) => businessData[key] !== newBusiness[key]
+        );
         if (hasChanges) {
-          await updateBusiness({ id: business._id, updateBusiness: newBusiness }).unwrap();
+          await updateBusiness({
+            id: business._id,
+            updateBusiness: newBusiness,
+          }).unwrap();
           message.success("Business updated successfully");
         } else {
           message.info("No changes made");
@@ -105,31 +105,23 @@ function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.Se
     }
   };
 
-  useEffect(()=>{
+  useEffect(() => {
     refetch();
-  },[refetch])
+  }, [refetch]);
 
-  const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (errorInfo) => {
+  const onFinishFailed: FormProps<FieldType>["onFinishFailed"] = (
+    errorInfo
+  ) => {
     console.log("Failed:", errorInfo);
   };
 
   const handleReset = () => {
-    if(business){
+    if (business) {
       form.setFieldsValue(businessData);
-    }else{
+    } else {
       form.resetFields();
     }
   };
-
-  const uniqueCompany = useMemo(() => {
-    return Array.from(
-      new Set(company?.map((a: ComapanyOrderList) => a.company))
-    ).map((value) => {
-      return company.find(
-        (company: ComapanyOrderList) => company.company === value
-      );
-    });
-  }, [company]);
 
   return (
     <div className="container mx-auto lg:p-4">
@@ -150,17 +142,12 @@ function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.Se
             ]}
             className="lg:w-[85%] w-full"
           >
-            <Select
-            className="placeholder-black placeholder-opacity-75  "
-            >
-              {uniqueCompany?.map((company: ComapanyOrderList) => (
-                <Select.Option 
-                 
-                key={company._id} value={company.company}>
-                  {company.company}
-                </Select.Option>
-              ))}
-            </Select>
+            <Input
+              placeholder="Company Name"
+              value={form.getFieldValue("companyname")}
+              className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
+              style={style}
+            />
           </Form.Item>
 
           <Form.Item
@@ -201,47 +188,48 @@ function Business({ setSelectedMenu,}: {setSelectedMenu: React.Dispatch<React.Se
             />
           </Form.Item>
 
-        <Form.Item
-          name="gst"
-          rules={[{ required: true, message: "Please input your GST number!" }]}
+          <Form.Item
+            name="gst"
+            rules={[
+              { required: true, message: "Please input your GST number!" },
+            ]}
           >
-          <Input
-            placeholder="GST Number"
-            value={form.getFieldValue("gst")}
-            className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
-            style={style}
+            <Input
+              placeholder="GST Number"
+              value={form.getFieldValue("gst")}
+              className="placeholder-black placeholder-opacity-75  lg:w-3/5 w-full"
+              style={style}
             />
-        </Form.Item>
-            </div>
+          </Form.Item>
+        </div>
+      </Form>
 
-          </Form>
+      <div className="flex flex-col md:flex-row  gap-3 justify-between items-center mt-10 lg:mt-28">
+        <Button
+          className="bg-blue-500 hover:bg-blue-700 text-white  w-[100px]   lg:h-10 rounded-full"
+          onClick={handleReset}
+        >
+          Cancel
+        </Button>
 
-        <div className="flex flex-col md:flex-row  gap-3 justify-between items-center mt-10 lg:mt-28">
+        <div className="flex gap-4">
           <Button
-            className="bg-blue-500 hover:bg-blue-700 text-white  w-[100px]   lg:h-10 rounded-full"
-            onClick={handleReset}
+            type="default"
+            onClick={() => setSelectedMenu("profile")}
+            className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 lg:py-2 lg:px-4 rounded-full"
           >
-            Cancel
+            Previous
           </Button>
 
-          <div className="flex gap-4">
-            <Button
-              type="default"
-              onClick={() => setSelectedMenu("profile")}
-              className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 lg:py-2 lg:px-4 rounded-full"
-            >
-              Previous
-            </Button>
-
-            <Button
-              htmlType="submit"
-              onClick={form.submit}
-              className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 lg:py-2 lg:px-4 rounded-full"
-            >
-              Save and Continue
-            </Button>
-          </div>
+          <Button
+            htmlType="submit"
+            onClick={form.submit}
+            className="bg-blue-500 hover:bg-blue-700 text-white lg:h-10 lg:py-2 lg:px-4 rounded-full"
+          >
+            Save and Continue
+          </Button>
         </div>
+      </div>
     </div>
   );
 }

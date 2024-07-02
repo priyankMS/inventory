@@ -31,26 +31,28 @@ export const businessApi = createApi({
       }),
     }),
     getBusinessById: builder.query({
-      query: (id) =>{
-        console.log("id ok", id);
+      query: (id) => {
         return {
           url: `/business/getOne/${id}`,
           method: "GET",
-        }
-      }
+        };
+      },
     }),
     updateBusiness: builder.mutation({
       query: ({ id, updateBusiness }) => {
-        console.log("jay ho",id);
-        
         return {
           url: `/business/update/${id}`,
           method: "PUT",
           body: updateBusiness,
         };
-      }
+      },
     }),
   }),
 });
 
-export const { useCreateBusinessMutation,useGetAllBusinessQuery,useGetBusinessByIdQuery ,useUpdateBusinessMutation} = businessApi;
+export const {
+  useCreateBusinessMutation,
+  useGetAllBusinessQuery,
+  useGetBusinessByIdQuery,
+  useUpdateBusinessMutation,
+} = businessApi;

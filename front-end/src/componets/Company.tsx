@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useEffect, useMemo } from "react";
+import React, {
+  useState,
+  useCallback,
+  useEffect,
+  useMemo,
+  useLayoutEffect,
+} from "react";
 import {
   Space,
   Button,
@@ -27,7 +33,7 @@ import {
   useUpdateCompanyMutation,
 } from "../services/Company";
 import { companyDetails } from "../interface/companyInterface";
-
+import "../style/company.css";
 
 import { FaFilter } from "react-icons/fa";
 import DateShow from "./date/DateShow";
@@ -52,20 +58,24 @@ const Company = () => {
     page: pagination.page,
     limit: pagination.limit,
   });
-  console.log("companyData", companyData);
+
 
   const [createCompany] = useCreateCompanyMutation();
   const [editCompany] = useUpdateCompanyMutation();
   const [deleteCompany] = useDeleteCompanyMutation();
   const [selectedDate, setSelectedDate] = useState<string[] | null>(null);
   const [open, setOpen] = useState<boolean>(false);
+
   const [state, setState] = useState<state>({
     startDate: "",
     endDate: "",
   });
 
   const { data: products, isLoading: productLoading } = useGetAllProductsQuery(
-    {}
+    {
+      page: 0,
+      limit: 0,
+    }
   );
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [selected, setSelected] = useState<string>();
@@ -74,9 +84,10 @@ const Company = () => {
   const screens = useBreakpoint();
   const [form] = Form.useForm();
   const [allCompanyData, setAllCompanyData] = useState<companyDetails[]>([]);
+  const [totalpages, setTotalPages] = useState<number>(0);
+  const [isSearch, setIsSearch] = useState<boolean>(false);
 
   const { confirm } = Modal;
-  console.log("allCompanyData", allCompanyData);
 
   useEffect(() => {
     if (companyData) {
@@ -174,6 +185,7 @@ const Company = () => {
 
   const handleSearch = (value: string) => {
     if (!value) {
+      setIsSearch(false);
       setAllCompanyData(data);
     } else {
       const regex = new RegExp(value, "i");
@@ -184,6 +196,8 @@ const Company = () => {
         );
       });
       setAllCompanyData(filteredData);
+      setTotalPages(filteredData?.length);
+      setIsSearch(true);
     }
   };
 
@@ -197,7 +211,7 @@ const Company = () => {
     if (selectedDate) {
       const startDate = stripTime(new Date(selectedDate[0]));
       const endDate = stripTime(new Date(selectedDate[1]));
-      const filteredData = data.filter((company) => {
+      const filteredData = data.filter((company: companyDetails) => {
         const itemDate = stripTime(new Date(company.date));
         return itemDate >= startDate && itemDate <= endDate;
       });
@@ -206,6 +220,8 @@ const Company = () => {
       setAllCompanyData(data);
     }
   }, [selectedDate, data]);
+
+
 
   const handleChange = useCallback(
     (name: string) => (e: React.FormEvent<HTMLInputElement>) => {
@@ -249,7 +265,6 @@ const Company = () => {
         placeholder: "MM/DD/YYYY",
         disableDates: "FUTURE",
         value: endDate,
-        // error: error.endDate,
       },
     ];
     return input;
@@ -285,11 +300,11 @@ const Company = () => {
     [chartFilterInput, handleChange, handleSubmitDates]
   );
 
-  console.log("products", products);
-  console.log("data", data);
-
   const getProductQuantity = (productName: string) => {
-    const product = products.find((prod) => prod.productsname === productName);
+    const product = products.find(
+      (prod: { productsname: string; quantity: number }) =>
+        prod.productsname === productName
+    );
     return product ? product.quantity : 0;
   };
 
@@ -317,7 +332,7 @@ const Company = () => {
       align: "center",
       render: (products) => (
         <div className="flex flex-wrap justify-center">
-          {products.map((tag) => {
+          {products.map((tag: string) => {
             const quantity = getProductQuantity(tag);
             const color =
               quantity < 100 ? "red" : quantity < 200 ? "orange" : "green";
@@ -342,7 +357,7 @@ const Company = () => {
       key: "action",
       render: (_, record) => (
         <Space size="middle" align="center" className="flex justify-center">
-          <Tooltip title="Edit">
+          <Tooltip >
             <Button
               className="bg-blue-500 hover:bg-blue-700 text-white rounded"
               icon={<DeleteRowOutlined />}
@@ -351,7 +366,7 @@ const Company = () => {
               Edit
             </Button>
           </Tooltip>
-          <Tooltip title="Delete">
+          <Tooltip >
             <Button
               className="bg-red-500 hover:bg-red-700 text-white rounded"
               icon={<MdDelete />}
@@ -371,10 +386,15 @@ const Company = () => {
     });
   };
 
-  const totalPage = useMemo(() => {
-    const totalData = selectedDate ? allCompanyData.length : data?.length;
-    return totalData;
-  }, [allCompanyData, selectedDate, data]);
+ 
+
+  useLayoutEffect(() => {
+    if (!isSearch) {
+      const totalData = selectedDate ? allCompanyData.length : data?.length;
+
+      setTotalPages(totalData);
+    }
+  }, [isSearch, selectedDate, allCompanyData?.length, data?.length]);
 
   if (isLoading)
     return (
@@ -385,7 +405,7 @@ const Company = () => {
   if (error) return <p>Error: {"data" in error}</p>;
 
   return (
-    <div className="dark:bg-gray-700  dark:border-gray-600 dark:text-white h-full overflow-hidden w-full lg:p-4">
+    <div className="dark:bg-gray-700  dark:border-gray-600 dark:text-white h-full overflow-hidden w-full p-4">
       <div className="flex justify-between lg:p-2 items-center mb-4 max-md:flex max-md:flex-col md:flex md:justify-around">
         <h2 className="dark:text-white max-md:w-full font-serif   md:text-xl ">
           Company
@@ -428,12 +448,12 @@ const Company = () => {
             //  className="min-w-full  divide-gray-200"
             pagination={{
               pageSize: pagination.limit,
-              total: totalPage,
+              total: totalpages,
               showSizeChanger: true,
               showTotal: (total, range) =>
                 `${range[0]}-${range[1]} of ${total} items`,
               defaultPageSize: 5,
-              onShowSizeChange: (page, pageSize) => {
+              onChange: (page, pageSize) => {
                 handlePaginationChange(page, pageSize);
               },
               pageSizeOptions: ["5", "10", "15", "20"],

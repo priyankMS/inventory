@@ -90,7 +90,7 @@ const AppBar = () => {
     });
   };
 
-  console.log("email", email);
+
 
   const handleMenuClick = (e: { key: SetStateAction<string> }) => {
     setSelectedMenu(e.key);
