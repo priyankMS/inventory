@@ -46,8 +46,8 @@ function Business({
   const { data: allBusiness } = useGetAllBusinessQuery({});
 
   const findId = allBusiness?.find(
-    (business) => business.createdBy._id === id
-  )._id;
+    (business) => business.createdBy?._id == id
+  )?._id;
 
   const { data: business, refetch } = useGetBusinessByIdQuery(findId);
 

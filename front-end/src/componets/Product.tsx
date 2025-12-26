@@ -1,6 +1,30 @@
 import { useState, useCallback, useLayoutEffect, useEffect } from "react";
-import { Button, Modal, Form, Input, InputNumber, message, Card, TableColumnType, Table } from "antd";
-import { DeleteOutlined, ExclamationCircleOutlined } from "@ant-design/icons";
+import { 
+  Button, 
+  Modal, 
+  Form, 
+  Input, 
+  InputNumber, 
+  message, 
+  Card, 
+  Table, 
+  Space, 
+  Tag, 
+  Tooltip,
+  Typography,
+  Row,
+  Col,
+  Badge,
+  Spin
+} from "antd";
+import { 
+  DeleteOutlined, 
+  ExclamationCircleOutlined, 
+  EditOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  ShoppingCartOutlined
+} from "@ant-design/icons";
 import {
   useGetAllProductsQuery,
   useCreateProductMutation,
@@ -11,6 +35,7 @@ import { useMediaQuery } from "react-responsive";
 import { formDataProduct } from "../interface/ProuductInerface";
 
 const { confirm } = Modal;
+const { Title, Text } = Typography;
 
 const Product = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
@@ -22,53 +47,58 @@ const Product = () => {
   const [isSearch, setIsSearch] = useState<boolean>(false);
   const [isEditing, setIsEditing] = useState<boolean>(false);
   const [form] = Form.useForm();
-  const [pagination,setPagination]=useState({
-    page:1,
-    limit:5
-  })
-  const { data, isLoading, refetch } = useGetAllProductsQuery({
-    page:pagination.page,
-    limit:pagination.limit
+  const [pagination, setPagination] = useState({
+    page: 1,
+    limit: 5
   });
-  const [totalpages,setTotalPages]=useState<number>(0)
-  const {data:totalProduct,refetch:totalRefetch}=useGetAllProductsQuery({
-    page:0,
-    limit:0
-  })
+
+  const { data, isLoading, refetch } = useGetAllProductsQuery({
+    page: pagination.page,
+    limit: pagination.limit
+  });
+
+  const [totalpages, setTotalPages] = useState<number>(0);
+  
+  const { data: totalProduct, refetch: totalRefetch } = useGetAllProductsQuery({
+    page: 0,
+    limit: 0
+  });
+
   const [createProduct] = useCreateProductMutation();
   const [updateProduct] = useUpdateProductMutation();
   const [deleteProduct] = useDeleteProductMutation();
   const [allProduct, setAllProduct] = useState([]);
- 
-  const isMobile = useMediaQuery({ maxWidth:  786 });
+  const [searchValue, setSearchValue] = useState("");
 
+  const isMobile = useMediaQuery({ maxWidth: 786 });
+  const isTablet = useMediaQuery({ minWidth: 787, maxWidth: 1024 });
 
-  useEffect(()=>{
-    if(data){
-      setAllProduct(data)
+  useEffect(() => {
+    if (data) {
+      setAllProduct(data);
     }
-  
-  },[data])
+  }, [data]);
 
   const handleSearch = (value: string) => {
-    if(!value){
-      setIsSearch(false)
-      setAllProduct(data)
+    setSearchValue(value);
+    if (!value) {
+      setIsSearch(false);
+      setAllProduct(data);
     } else {
-      const regex = new  RegExp(value,"i")
-      const filteredData = totalProduct?.filter((product:formDataProduct)=>regex.test(product.productsname) || regex.test(product.quantity.toString()))
-       setAllProduct(filteredData)
-        setIsSearch(true)
-        setTotalPages(filteredData?.length)
+      const regex = new RegExp(value, "i");
+      const filteredData = totalProduct?.filter((product: formDataProduct) => 
+        regex.test(product.productsname) || regex.test(product.quantity.toString())
+      );
+      setAllProduct(filteredData);
+      setIsSearch(true);
+      setTotalPages(filteredData?.length);
     }
-  }
-  
+  };
 
-
-
-  
-
-  const memoizedRefetch = useCallback(() => { refetch(),totalRefetch();}, [refetch,totalRefetch]);
+  const memoizedRefetch = useCallback(() => { 
+    refetch();
+    totalRefetch();
+  }, [refetch, totalRefetch]);
 
   const handleCreate = async () => {
     try {
@@ -85,7 +115,6 @@ const Product = () => {
     }
   };
 
-  
   const handleUpdate = async () => {
     try {
       const values = await form.validateFields();
@@ -105,8 +134,12 @@ const Product = () => {
   const handleDelete = useCallback(
     async (id: string) => {
       confirm({
-        title: "Are you sure you want to delete this product?",
-        icon: <ExclamationCircleOutlined />,
+        title: "Delete Product",
+        icon: <ExclamationCircleOutlined className="text-red-500" />,
+        content: "Are you sure you want to delete this product? This action cannot be undone.",
+        okText: "Delete",
+        okType: "danger",
+        cancelText: "Cancel",
         onOk: async () => {
           try {
             await deleteProduct(id);
@@ -116,7 +149,6 @@ const Product = () => {
             message.error("Failed to delete product!");
           }
         },
-        onCancel() {},
       });
     },
     [deleteProduct, memoizedRefetch]
@@ -140,69 +172,92 @@ const Product = () => {
     setIsModalVisible(true);
   };
 
-  
+  const getQuantityColor = (quantity: number) => {
+    if (quantity < 100) return "red";
+    if (quantity < 300) return "orange";
+    if (quantity < 500) return "gold";
+    return "green";
+  };
 
-  
-  
-
-  const columns:TableColumnType =[
+  const columns = [
     {
-      title:"NO",
-      dataIndex:"_id",
-      render: (_, __, index:number) => index + 1,
-      key:"_id",
-      className:"text-center",
-      width:80,
-      align:"center"
+      title: "NO",
+      dataIndex: "_id",
+      render: (_, __, index: number) => (
+        <Badge 
+          count={index + 1} 
+          style={{ backgroundColor: '#1890ff' }}
+        />
+      ),
+      key: "_id",
+      width: 80,
+      align: "center" as const,
     },
     {
-     title:"product Name",
-     dataIndex:"productsname",
-     key:"productsname",
-     align:"center",
-     className:"text-center"
+      title: "Product Name",
+      dataIndex: "productsname",
+      key: "productsname",
+      render: (text: string) => (
+        <div className="flex items-center gap-2">
+          <ShoppingCartOutlined className="text-blue-500" />
+          <Text strong>{text}</Text>
+        </div>
+      ),
     },
     {
-      title:" Description",
-      dataIndex:"description",
-      key:"description",
-      align:"center",
-      className:"text-center"
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
+      render: (text: string) => (
+        <Text ellipsis={{ tooltip: text }} className="max-w-xs">
+          {text || <Text type="secondary">No description</Text>}
+        </Text>
+      ),
     },
     {
-      title:"Quantity",
-      dataIndex:"quantity",
-      key:"quantity",
-      align:"center",
-      className:"text-center"
+      title: "Quantity",
+      dataIndex: "quantity",
+      key: "quantity",
+      width: 120,
+      align: "center" as const,
+      render: (quantity: number) => (
+        <Tag color={getQuantityColor(quantity)} className="text-sm font-semibold px-3 py-1">
+          {quantity}
+        </Tag>
+      ),
+      sorter: (a: formDataProduct, b: formDataProduct) => a.quantity - b.quantity,
     },
     {
       title: "Action",
       dataIndex: "_id",
       key: "_id",
-      align: "center",
-      render: (_,record:formDataProduct) => (
-        <div className="flex justify-center">
-          <Button
-            type="primary"
-            onClick={() => handleEdit(record)}
-            className="mr-2"
-          >
-            Edit
-          </Button>
-          <Button
-            type="primary"
-            danger
-            icon={<DeleteOutlined />}
-            onClick={() => handleDelete(record._id!)}
-          >
-            Delete
-          </Button>
-        </div>
+      width: 180,
+      align: "center" as const,
+      fixed: 'right' as const,
+      render: (_, record: formDataProduct) => (
+        <Space size="small">
+          <Tooltip title="Edit Product">
+            <Button
+              type="primary"
+              icon={<EditOutlined />}
+              onClick={() => handleEdit(record)}
+              className="bg-blue-500 hover:bg-blue-600"
+            >
+              Edit
+            </Button>
+          </Tooltip>
+          <Tooltip title="Delete Product">
+            <Button
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
+              onClick={() => handleDelete(record._id!)}
+            />
+          </Tooltip>
+        </Space>
       ),
     }
-
-  ]
+  ];
 
   const handlePaginationChange = (page: number, pageSize: number) => {
     setPagination({
@@ -211,172 +266,239 @@ const Product = () => {
     });
   };
 
-
-  useLayoutEffect(()=>{
-    if(!isSearch){
-      setTotalPages(totalProduct?.length)
+  useLayoutEffect(() => {
+    if (!isSearch) {
+      setTotalPages(totalProduct?.length);
     }
-  },[totalProduct,isSearch])
+  }, [totalProduct, isSearch]);
 
-  if (isLoading)
+  if (isLoading) {
     return (
-      <div className="h-full flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-blue-700"></div>
+      <div className="h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900">
+        <Space direction="vertical" align="center" size="large">
+          <Spin size="large" />
+          <Text className="text-gray-600 dark:text-gray-400">Loading products...</Text>
+        </Space>
       </div>
     );
+  }
 
   return (
-    <div className="w-full h-full p-4 overflow-hidden">
-      <div className="flex justify-between items-center mb-4 max-md:flex max-md:flex-col md:flex md:justify-around">
-        <h3 className="dark:text-white  font-serif max-md:w-full">Product</h3>
-        <Input
-          type="text"
-          id="small-input"
-          placeholder="Search Product Name or Quantity"
-          className="block p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 max-md:w-full max-md:pl-4 md:w-72 "
-          onChange={(e) => handleSearch(e.target.value)}
-        />
-        <Button
-          type="primary"
-          onClick={handleAdd}
-          className="max-md:w-full max-md:mt-3 max-md:mb-4 max-md:pl-10 max-md:pr-10"
-        >
-          Add Product
-        </Button>
-      </div>
-      {isMobile ? (
-        <div>
-          <div
-          className="  overflow-y-auto dark:bg-slate-700"
-          style={{ maxHeight: "calc(100vh - 300px)" }}
-        >
-          {
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 md:p-6">
+      {/* Header Section */}
+      <Card className="mb-6 shadow-lg border-0 rounded-xl">
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} md={6}>
+            <Title level={3} className="!mb-0 dark:text-white flex items-center gap-2">
+              <ShoppingCartOutlined className="text-blue-500" />
+              Products
+            </Title>
+            <Text className="text-gray-500 dark:text-gray-400">
+              Total: {totalpages || 0}
+            </Text>
+          </Col>
           
-          (isSearch?allProduct:totalProduct)?.map((product: formDataProduct, index: number) => (
-            <Card
-              key={product._id}
-              className=" sm:grid-cols-2  border mb-1 rounded-lg shadow-md dark:text-white"
+          <Col xs={24} md={12}>
+            <Input
+              size="large"
+              placeholder="Search by product name or quantity..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              value={searchValue}
+              onChange={(e) => handleSearch(e.target.value)}
+              allowClear
+              className="shadow-sm"
+            />
+          </Col>
+          
+          <Col xs={24} md={6} className="flex justify-end">
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={handleAdd}
+              className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 shadow-md"
             >
-              <div>
-                <strong>ID:</strong> {index + 1}
-              </div>
-              <div>
-                <strong>Product Name:</strong> {product.productsname}
-              </div>
-              <div>
-                <strong>Description:</strong> {product.description}
-              </div>
-              <div>
-                <strong>Quantity:</strong> {product.quantity}
-              </div>
-              <div className="flex justify-center">
-                <Button
-                  type="primary"
-                  onClick={() => handleEdit(product)}
-                  className="mr-2 mt-2 max-md:px-8"
-                >
-                  Edit
-                </Button>
-                <Button
-                  type="primary"
-                  danger
-                  icon={<DeleteOutlined />}
-                  onClick={() => handleDelete(product._id!)}
-                  className="mr-2 mt-2"
-                >
-                  Delete
-                </Button>
-              </div>
+              Add Product
+            </Button>
+          </Col>
+        </Row>
+      </Card>
+
+      {/* Content Section */}
+      {isMobile ? (
+        <div className="space-y-4">
+          {(isSearch ? allProduct : totalProduct)?.length > 0 ? (
+            (isSearch ? allProduct : totalProduct)?.map((product: formDataProduct, index: number) => (
+              <Card
+                key={product._id}
+                className="shadow-lg hover:shadow-xl transition-all duration-300 border-0 rounded-xl"
+                bodyStyle={{ padding: '20px' }}
+              >
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <Badge 
+                      count={index + 1} 
+                      style={{ backgroundColor: '#1890ff' }}
+                    />
+                    <Tag color={getQuantityColor(product.quantity)} className="font-semibold">
+                      Qty: {product.quantity}
+                    </Tag>
+                  </div>
+                  
+                  <div>
+                    <Text type="secondary" className="text-xs">Product Name</Text>
+                    <Title level={5} className="!mb-0 !mt-1">
+                      {product.productsname}
+                    </Title>
+                  </div>
+                  
+                  <div>
+                    <Text type="secondary" className="text-xs">Description</Text>
+                    <Text className="block mt-1">
+                      {product.description || <Text type="secondary">No description</Text>}
+                    </Text>
+                  </div>
+                  
+                  <Space size="small" className="w-full mt-4" direction="horizontal">
+                    <Button
+                      type="primary"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEdit(product)}
+                      className="flex-1 bg-blue-500"
+                      block
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDelete(product._id!)}
+                      className="flex-1"
+                      block
+                    >
+                      Delete
+                    </Button>
+                  </Space>
+                </div>
+              </Card>
+            ))
+          ) : (
+            <Card className="text-center py-12">
+              <Text className="text-gray-500 dark:text-gray-400">
+                No products found
+              </Text>
             </Card>
-          ))}
-        </div>
+          )}
         </div>
       ) : (
-        
-        <div className=" mt-10">
+        <Card className="shadow-lg border-0 rounded-xl">
           <Table
             columns={columns}
             dataSource={allProduct}
-            rowClassName="dark:bg-slate-700   " 
             rowKey="_id"
-            scroll={{ y: 300, scrollToFirstRowOnChange: true }}
+            loading={isLoading}
+            scroll={{ x: 1000 }}
+            rowClassName={(record, index) =>
+              index % 2 === 0
+                ? "bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors"
+                : "bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors"
+            }
             pagination={{
-             position: ["bottomCenter"],
-             pageSize:pagination.limit,
-             total:totalpages,
-             showTotal:(total,range)=>` ${range[0]} to ${range[1]} of ${total} entries`,
-             showSizeChanger:true,
-              pageSizeOptions:["5","10","15","20"],
-              onChange:(page,pageSize)=>{
-                handlePaginationChange(page,pageSize)
-              }
+              position: ["bottomCenter"],
+              pageSize: pagination.limit,
+              current: pagination.page,
+              total: totalpages,
+              showTotal: (total, range) => (
+                <Text className="dark:text-gray-400">
+                  Showing {range[0]}-{range[1]} of {total} products
+                </Text>
+              ),
+              showSizeChanger: true,
+              pageSizeOptions: ["5", "10", "15", "20", "50"],
+              onChange: handlePaginationChange,
             }}
-            className="w-full"
           />
-        </div>
+        </Card>
       )}
+
+      {/* Modal */}
       <Modal
-        title={isEditing ? "Edit Product" : "Create Product"}
-        visible={isModalVisible}
+        title={
+          <Space className="text-lg">
+            <ShoppingCartOutlined className="text-blue-500" />
+            <Text strong>{isEditing ? "Edit Product" : "Create New Product"}</Text>
+          </Space>
+        }
+        open={isModalVisible}
         onOk={isEditing ? handleUpdate : handleCreate}
-        onCancel={() => setIsModalVisible(false)}
-        className="max-w-full md:max-w-lg lg:max-w-xl h-auto md:h-96 lg:h-auto"
+        onCancel={() => {
+          setIsModalVisible(false);
+          form.resetFields();
+        }}
+        okText={isEditing ? "Update" : "Create"}
+        cancelText="Cancel"
+        width={isMobile ? "95%" : 600}
+        className="top-8"
+        okButtonProps={{ 
+          className: "bg-blue-500 hover:bg-blue-600",
+          size: "large"
+        }}
+        cancelButtonProps={{ size: "large" }}
       >
         <Form
           form={form}
+          layout="vertical"
           initialValues={isEditing ? formData : {}}
           onValuesChange={(_, allValues) => {
             setFormData((prev: formDataProduct) => ({ ...prev, ...allValues }));
           }}
-          className="space-y-4 p-4 bg-white shadow-md rounded-md"
+          className="mt-6"
         >
-          <div className="flex flex-col space-y-4">
-            <div className="flex flex-col md:flex-row items-center md:space-x-4">
-              <label className="md:w-1/4 text-right font-semibold md:text-left">
-                Product Name
-              </label>
-              <Form.Item
-                name="productsname"
-                rules={[
-                  { required: true, message: "Please input product name!" },
-                ]}
-                className="flex-1"
-              >
-                <Input className="w-full border border-gray-300 rounded-md shadow-sm" />
-              </Form.Item>
-            </div>
+          <Form.Item
+            label={<Text strong>Product Name</Text>}
+            name="productsname"
+            rules={[
+              { required: true, message: "Please enter product name!" },
+              { min: 3, message: "Product name must be at least 3 characters" }
+            ]}
+          >
+            <Input 
+              size="large"
+              placeholder="Enter product name"
+              prefix={<ShoppingCartOutlined className="text-gray-400" />}
+            />
+          </Form.Item>
 
-            <div className="flex flex-col md:flex-row items-center md:space-x-4">
-              <label className="md:w-1/4 text-right font-semibold md:text-left">
-                Description
-              </label>
-              <Form.Item name="description" className="flex-1">
-                <Input className="w-full border border-gray-300 rounded-md shadow-sm" />
-              </Form.Item>
-            </div>
+          <Form.Item
+            label={<Text strong>Description</Text>}
+            name="description"
+          >
+            <Input.TextArea
+              size="large"
+              placeholder="Enter product description (optional)"
+              rows={4}
+              showCount
+              maxLength={200}
+            />
+          </Form.Item>
 
-            <div className="flex flex-col md:flex-row items-center md:space-x-4">
-              <label className="md:w-1/4 text-right font-semibold md:text-left">
-                Quantity
-              </label>
-              <Form.Item
-                name="quantity"
-                rules={[
-                  {
-                    required: true,
-                    type: "number",
-                    message: "Please input quantity!",
-                  },
-                ]}
-                className="flex-1"
-              >
-                <InputNumber
-                  min={1}
-                  className="w-full border border-gray-300 rounded-md shadow-sm"
-                />
-              </Form.Item>
-            </div>
-          </div>
+          <Form.Item
+            label={<Text strong>Quantity</Text>}
+            name="quantity"
+            rules={[
+              { required: true, message: "Please enter quantity!" },
+              { type: "number", min: 1, message: "Quantity must be at least 1" }
+            ]}
+          >
+            <InputNumber
+              size="large"
+              min={1}
+              className="w-full"
+              placeholder="Enter quantity"
+              formatter={value => `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')}
+            />
+          </Form.Item>
         </Form>
       </Modal>
     </div>

@@ -21,9 +21,20 @@ import {
   Tooltip,
   Table,
   Tag,
-  TableColumnsType,
+  Typography,
+  Badge,
+  Spin,
 } from "antd";
-import { DeleteOutlined, DeleteRowOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  EditOutlined,
+  PlusOutlined,
+  SearchOutlined,
+  ShopOutlined,
+  CalendarOutlined,
+  ReloadOutlined,
+  ExclamationCircleOutlined,
+} from "@ant-design/icons";
 import { useGetAllProductsQuery } from "../services/Productlist";
 import {
   useCreateCompanyMutation,
@@ -33,8 +44,6 @@ import {
   useUpdateCompanyMutation,
 } from "../services/Company";
 import { companyDetails } from "../interface/companyInterface";
-import "../style/company.css";
-
 import { FaFilter } from "react-icons/fa";
 import DateShow from "./date/DateShow";
 import { DateRange, state } from "../interface/orderlistInterface";
@@ -43,10 +52,10 @@ import {
   productSearchInterface,
 } from "../interface/ProuductInerface";
 
-import { MdDelete } from "react-icons/md";
-
 const { Option } = Select;
 const { useBreakpoint } = Grid;
+const { Title, Text } = Typography;
+const { confirm } = Modal;
 
 const Company = () => {
   const { data, isLoading, error, refetch } = useGetAllCompanyQuery({});
@@ -59,35 +68,31 @@ const Company = () => {
     limit: pagination.limit,
   });
 
-
   const [createCompany] = useCreateCompanyMutation();
   const [editCompany] = useUpdateCompanyMutation();
   const [deleteCompany] = useDeleteCompanyMutation();
   const [selectedDate, setSelectedDate] = useState<string[] | null>(null);
   const [open, setOpen] = useState<boolean>(false);
+  const [searchValue, setSearchValue] = useState("");
 
   const [state, setState] = useState<state>({
     startDate: "",
     endDate: "",
   });
 
-  const { data: products, isLoading: productLoading } = useGetAllProductsQuery(
-    {
-      page: 0,
-      limit: 0,
-    }
-  );
+  const { data: products, isLoading: productLoading } = useGetAllProductsQuery({
+    page: 0,
+    limit: 0,
+  });
+
   const [isEdit, setIsEdit] = useState<boolean>(false);
   const [selected, setSelected] = useState<string>();
-  const [createCompanyModalVisible, setCreateCompanyModalVisible] =
-    useState<boolean>(false);
+  const [createCompanyModalVisible, setCreateCompanyModalVisible] = useState<boolean>(false);
   const screens = useBreakpoint();
   const [form] = Form.useForm();
   const [allCompanyData, setAllCompanyData] = useState<companyDetails[]>([]);
   const [totalpages, setTotalPages] = useState<number>(0);
   const [isSearch, setIsSearch] = useState<boolean>(false);
-
-  const { confirm } = Modal;
 
   useEffect(() => {
     if (companyData) {
@@ -96,12 +101,15 @@ const Company = () => {
   }, [companyData]);
 
   const handleCreateCompanyModal = () => {
+    form.resetFields();
+    setIsEdit(false);
     setCreateCompanyModalVisible(true);
   };
 
   const handleCreateCompanyCancel = () => {
     form.resetFields();
     setCreateCompanyModalVisible(false);
+    setIsEdit(false);
   };
 
   const handleEditModal = useCallback(
@@ -116,17 +124,21 @@ const Company = () => {
 
   const handleDelete = (id: string) => {
     confirm({
-      title: "Are you sure you want to delete this company?",
+      title: "Delete Company",
+      icon: <ExclamationCircleOutlined className="text-red-500" />,
+      content: "Are you sure you want to delete this company? This action cannot be undone.",
+      okText: "Delete",
+      okType: "danger",
+      cancelText: "Cancel",
       onOk: async () => {
         try {
           await deleteCompany(id);
-          message.success("Product deleted successfully!");
+          message.success("Company deleted successfully!");
           refetch();
         } catch (error) {
-          message.error("Failed to delete product!");
+          message.error("Failed to delete company!");
         }
       },
-      onCancel() {},
     });
   };
 
@@ -143,18 +155,14 @@ const Company = () => {
       }
 
       const date = new Date();
-      values.date = `${date.getFullYear()}-${String(
-        date.getMonth() + 1
-      ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+      values.date = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
       await createCompany(values).unwrap();
-      message.success("Company details added");
+      message.success("Company created successfully!");
       setCreateCompanyModalVisible(false);
       form.resetFields();
       await refetch();
     } catch (error: any) {
-      message.error(
-        `Failed to add company: ${error.data?.message || error.message}`
-      );
+      message.error(`Failed to add company: ${error.data?.message || error.message}`);
     }
   };
 
@@ -172,21 +180,21 @@ const Company = () => {
       }
 
       await editCompany({ id: selected, updatedCompany: values });
+      message.success("Company updated successfully!");
       setCreateCompanyModalVisible(false);
       form.resetFields();
       setIsEdit(false);
       await refetch();
     } catch (error: any) {
-      message.error(
-        `Failed to edit company: ${error.data?.message || error.message}`
-      );
+      message.error(`Failed to edit company: ${error.data?.message || error.message}`);
     }
   };
 
   const handleSearch = (value: string) => {
+    setSearchValue(value);
     if (!value) {
       setIsSearch(false);
-      setAllCompanyData(data);
+      setAllCompanyData(companyData);
     } else {
       const regex = new RegExp(value, "i");
       const filteredData = data.filter((company: productSearchInterface) => {
@@ -216,12 +224,10 @@ const Company = () => {
         return itemDate >= startDate && itemDate <= endDate;
       });
       setAllCompanyData(filteredData);
-    } else {
-      setAllCompanyData(data);
+    } else if (!isSearch) {
+      setAllCompanyData(companyData);
     }
-  }, [selectedDate, data]);
-
-
+  }, [selectedDate, data, companyData, isSearch]);
 
   const handleChange = useCallback(
     (name: string) => (e: React.FormEvent<HTMLInputElement>) => {
@@ -245,19 +251,20 @@ const Company = () => {
   const handleReset = () => {
     setState({ startDate: "", endDate: "" });
     setSelectedDate(null);
+    setSearchValue("");
+    setIsSearch(false);
+    setAllCompanyData(companyData);
   };
 
   const chartFilterInput = useMemo(() => {
     const { startDate, endDate } = state;
-
     const input: DateRange[] = [
       {
         name: "startDate",
-        label: "From Date(MM/DD/YYYY)",
+        label: "From Date (MM/DD/YYYY)",
         placeholder: "MM/DD/YYYY",
         disableDates: "FUTURE",
         value: startDate,
-        // error: error.startDate,
       },
       {
         name: "endDate",
@@ -272,74 +279,100 @@ const Company = () => {
 
   const content = useMemo(
     () => (
-      <Col className="p-2  w-52 ">
+      <div className="p-4 w-72">
+        <Title level={5} className="mb-4">Filter by Date Range</Title>
         {chartFilterInput.map((item, index) => (
-          <Col key={index} className="pb-8 mt-2">
+          <div key={index} className="mb-4">
             <DateShow
               size="large"
               onChange={handleChange(item.name)}
               disabled={false}
               {...item}
             />
-          </Col>
+          </div>
         ))}
-        <Row gutter={16}>
+        <Row gutter={12} className="mt-6">
           <Col span={12}>
-            <Button type="default" onClick={handleReset} size="middle">
+            <Button 
+              block 
+              size="large"
+              onClick={handleReset}
+              icon={<ReloadOutlined />}
+            >
               Reset
             </Button>
           </Col>
           <Col span={12}>
-            <Button type="primary" onClick={handleSubmitDates} size="middle">
-              Submit
+            <Button 
+              block 
+              type="primary" 
+              size="large"
+              onClick={handleSubmitDates}
+            >
+              Apply
             </Button>
           </Col>
         </Row>
-      </Col>
+      </div>
     ),
-    [chartFilterInput, handleChange, handleSubmitDates]
+    [chartFilterInput, handleChange, handleSubmitDates, handleReset]
   );
 
   const getProductQuantity = (productName: string) => {
-    const product = products.find(
+    const product = products?.find(
       (prod: { productsname: string; quantity: number }) =>
         prod.productsname === productName
     );
     return product ? product.quantity : 0;
   };
 
-  const columns: TableColumnsType = [
+  const getQuantityColor = (quantity: number) => {
+    if (quantity < 100) return "red";
+    if (quantity < 300) return "orange";
+    if (quantity < 500) return "gold";
+    return "green";
+  };
+
+  const columns = [
     {
       title: "No",
-      width: 50,
-
+      width: 80,
       dataIndex: "_id",
-      render: (_, __, index) => index + 1,
+      render: (_, __, index) => (
+        <Badge 
+          count={index + 1} 
+          style={{ backgroundColor: '#1890ff' }}
+        />
+      ),
       key: "_id",
-      className: "text-center",
+      align: "center" as const,
     },
     {
       title: "Company Name",
       dataIndex: "company",
       key: "companyname",
-      align: "center",
-      className: "text-center",
+      render: (text: string) => (
+        <div className="flex items-center gap-2">
+          <ShopOutlined className="text-blue-500" />
+          <Text strong>{text}</Text>
+        </div>
+      ),
     },
     {
-      title: "Product",
+      title: "Products",
       dataIndex: "products",
       key: "products",
-      align: "center",
-      render: (products) => (
-        <div className="flex flex-wrap justify-center">
+      render: (products: string[]) => (
+        <div className="flex flex-wrap gap-2">
           {products.map((tag: string) => {
             const quantity = getProductQuantity(tag);
-            const color =
-              quantity < 100 ? "red" : quantity < 200 ? "orange" : "green";
+            const color = getQuantityColor(quantity);
             return (
-              <Tag color={color} className="m-1" key={tag}>
-                {tag.toUpperCase()}
-              </Tag>
+              <Tooltip key={tag} title={`Quantity: ${quantity}`}>
+                <Tag color={color} className="text-sm font-medium px-3 py-1">
+                  {tag.toUpperCase()}
+                </Tag>
+              </Tooltip>
             );
           })}
         </div>
@@ -348,37 +381,46 @@ const Company = () => {
     {
       title: "Date",
       dataIndex: "date",
-      render: (date) => new Date(date).toLocaleDateString(),
-      align: "center",
-      className: "text-center",
+      render: (date: string) => (
+        <div className="flex items-center gap-2">
+          <CalendarOutlined className="text-gray-400" />
+          <Text>{new Date(date).toLocaleDateString()}</Text>
+        </div>
+      ),
+      width: 150,
+      align: "center" as const,
     },
     {
       title: "Action",
       key: "action",
-      render: (_, record) => (
-        <Space size="middle" align="center" className="flex justify-center">
-          <Tooltip >
+      width: 180,
+      fixed: 'right' as const,
+      render: (_, record: companyDetails) => (
+        <Space size="small">
+          <Tooltip title="Edit Company">
             <Button
-              className="bg-blue-500 hover:bg-blue-700 text-white rounded"
-              icon={<DeleteRowOutlined />}
+              type="primary"
+              icon={<EditOutlined />}
               onClick={() => handleEditModal(record)}
+              className="bg-blue-500 hover:bg-blue-600"
             >
               Edit
             </Button>
           </Tooltip>
-          <Tooltip >
+          <Tooltip title="Delete Company">
             <Button
-              className="bg-red-500 hover:bg-red-700 text-white rounded"
-              icon={<MdDelete />}
+              type="primary"
+              danger
+              icon={<DeleteOutlined />}
               onClick={() => handleDelete(record._id)}
-            >
-              Delete
-            </Button>
+            />
           </Tooltip>
         </Space>
       ),
+      align: "center" as const,
     },
   ];
+
   const handlePaginationChange = (page: number, pageSize: number) => {
     setPagination({
       page,
@@ -386,148 +428,258 @@ const Company = () => {
     });
   };
 
- 
-
   useLayoutEffect(() => {
     if (!isSearch) {
       const totalData = selectedDate ? allCompanyData.length : data?.length;
-
       setTotalPages(totalData);
     }
   }, [isSearch, selectedDate, allCompanyData?.length, data?.length]);
 
-  if (isLoading)
+  if (isLoading) {
     return (
-      <div className="h-full flex justify-center items-center">
-        <div className="animate-spin rounded-full h-32 w-32 border-t-4 border-b-4 border-blue-700"></div>
+      <div className="h-screen flex justify-center items-center bg-gray-50 dark:bg-gray-900">
+        <Space direction="vertical" align="center" size="large">
+          <Spin size="large" />
+          <Text className="text-gray-600 dark:text-gray-400">Loading companies...</Text>
+        </Space>
       </div>
     );
-  if (error) return <p>Error: {"data" in error}</p>;
+  }
+
+  if (error) {
+    return (
+      <div className="h-screen flex justify-center items-center">
+        <Text type="danger">Error loading companies</Text>
+      </div>
+    );
+  }
 
   return (
-    <div className="dark:bg-gray-700  dark:border-gray-600 dark:text-white h-full overflow-hidden w-full p-4">
-      <div className="flex justify-between lg:p-2 items-center mb-4 max-md:flex max-md:flex-col md:flex md:justify-around">
-        <h2 className="dark:text-white max-md:w-full font-serif   md:text-xl ">
-          Company
-        </h2>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 p-4 md:p-6">
+      {/* Header Section */}
+      <Card className="mb-6 shadow-lg border-0 rounded-xl">
+        <Row gutter={[16, 16]} align="middle">
+          <Col xs={24} md={6}>
+            <Title level={3} className="!mb-0 dark:text-white flex items-center gap-2">
+              <ShopOutlined className="text-blue-500" />
+              Companies
+            </Title>
+            <Text className="text-gray-500 dark:text-gray-400">
+              Total: {totalpages || 0}
+            </Text>
+          </Col>
+          
+          <Col xs={24} md={11}>
+            <Input
+              size="large"
+              placeholder="Search by company or product name..."
+              prefix={<SearchOutlined className="text-gray-400" />}
+              value={searchValue}
+              onChange={(e) => handleSearch(e.target.value)}
+              allowClear
+              className="shadow-sm"
+            />
+          </Col>
+          
+          <Col xs={24} md={5} className="flex justify-end">
+            <Button
+              type="primary"
+              size="large"
+              icon={<PlusOutlined />}
+              onClick={handleCreateCompanyModal}
+              className="w-full md:w-auto bg-blue-500 hover:bg-blue-600 shadow-md"
+            >
+              Add Company
+            </Button>
+          </Col>
 
-        <Input
-          type="text"
-          id="small-input"
-          placeholder="Search Company Name or Product Name"
-          onChange={(e) => handleSearch(e.target.value)}
-          className="block p-2 text-gray-900 border border-gray-300 rounded-lg bg-gray-50 text-xs focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500 max-md:w-full max-md:pl-4 md:w-72"
-        />
-        <Button
-          type="primary"
-          onClick={handleCreateCompanyModal}
-          className="max-md:w-full max-md:mt-3 max-md:mb-4 max-md:pl-10 max-md:pr-10"
-        >
-          Add company
-        </Button>
+          <Col xs={24} md={2} className="flex justify-end">
+            <Popover
+              content={content}
+              trigger="click"
+              placement="bottomRight"
+              open={open}
+              onOpenChange={handleOpenChange}
+            >
+              <Badge dot={selectedDate !== null} offset={[-5, 5]}>
+                <Button
+                  size="large"
+                  icon={<FaFilter />}
+                  className="hover:border-blue-500 hover:text-blue-500"
+                >
+                  Filter
+                </Button>
+              </Badge>
+            </Popover>
+          </Col>
+        </Row>
+      </Card>
 
-        <Popover
-          content={content}
-          trigger="click"
-          placement="bottomRight"
-          open={open}
-          onOpenChange={handleOpenChange}
-        >
-          <FaFilter cursor="pointer" />
-        </Popover>
-      </div>
-
+      {/* Content Section */}
       {screens.md ? (
-        <div
-          className="overflow-y-auto"
-          style={{ maxHeight: "calc(100vh - 200px)" }}
-        >
+        <Card className="shadow-lg border-0 rounded-xl">
           <Table
-            sticky
-            scroll={{ y: 270, scrollToFirstRowOnChange: true }}
-            //  className="min-w-full  divide-gray-200"
-            pagination={{
-              pageSize: pagination.limit,
-              total: totalpages,
-              showSizeChanger: true,
-              showTotal: (total, range) =>
-                `${range[0]}-${range[1]} of ${total} items`,
-              defaultPageSize: 5,
-              onChange: (page, pageSize) => {
-                handlePaginationChange(page, pageSize);
-              },
-              pageSizeOptions: ["5", "10", "15", "20"],
-            }}
             columns={columns}
             dataSource={allCompanyData}
+            rowKey="_id"
+            loading={isLoading}
+            scroll={{ x: 1200 }}
+            rowClassName={(record, index) =>
+              index % 2 === 0
+                ? "bg-gray-50 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors"
+                : "bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-gray-600 transition-colors"
+            }
+            pagination={{
+              pageSize: pagination.limit,
+              current: pagination.page,
+              total: totalpages,
+              showSizeChanger: true,
+              showTotal: (total, range) => (
+                <Text className="dark:text-gray-400">
+                  Showing {range[0]}-{range[1]} of {total} companies
+                </Text>
+              ),
+              pageSizeOptions: ["5", "10", "15", "20", "50"],
+              onChange: handlePaginationChange,
+            }}
           />
-        </div>
+        </Card>
       ) : (
-        <div
-          className="overflow-y-auto   space-y-4"
-          style={{ maxHeight: "calc(100vh - 300px)" }}
-        >
-          {allCompanyData?.map((item: companyDetails) => (
-            <Card
-              key={item._id}
-              className="bg-white rounded-lg shadow-md dark:bg-gray-700 p-4"
-            >
-              <div className="mb-2">
-                <b>Company Name:</b> {item.company}
-              </div>
-              <div className="mb-2">
-                <b className="tracking-wide">Products Name:</b>{" "}
-                {item.products.join(", ")}
-              </div>
-              <div className="mb-2">
-                <b>Date:</b> {item.date.slice(0, 10)}
-              </div>
-              <div className="flex justify-between">
-                <Space size="middle">
-                  <Button type="primary" onClick={() => handleEditModal(item)}>
-                    Edit
-                  </Button>
-                  <Button
-                    type="primary"
-                    danger
-                    icon={<DeleteOutlined />}
-                    onClick={() => handleDelete(item._id)}
-                  >
-                    Delete
-                  </Button>
-                </Space>
-              </div>
+        <div className="space-y-4">
+          {allCompanyData?.length > 0 ? (
+            allCompanyData?.map((item: companyDetails, index: number) => (
+              <Card
+                key={item._id}
+                className="shadow-lg hover:shadow-xl transition-all duration-300 border-0 rounded-xl"
+                bodyStyle={{ padding: '20px' }}
+              >
+                <div className="space-y-3">
+                  <div className="flex justify-between items-start">
+                    <Badge 
+                      count={index + 1} 
+                      style={{ backgroundColor: '#1890ff' }}
+                    />
+                    <div className="flex items-center gap-1 text-gray-500 text-sm">
+                      <CalendarOutlined />
+                      <Text type="secondary">{item.date.slice(0, 10)}</Text>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <Text type="secondary" className="text-xs">Company Name</Text>
+                    <Title level={5} className="!mb-0 !mt-1 flex items-center gap-2">
+                      <ShopOutlined className="text-blue-500" />
+                      {item.company}
+                    </Title>
+                  </div>
+                  
+                  <div>
+                    <Text type="secondary" className="text-xs block mb-2">Products</Text>
+                    <div className="flex flex-wrap gap-2">
+                      {item.products.map((product: string) => {
+                        const quantity = getProductQuantity(product);
+                        const color = getQuantityColor(quantity);
+                        return (
+                          <Tag key={product} color={color} className="text-xs px-2 py-1">
+                            {product.toUpperCase()}
+                          </Tag>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  
+                  <Space size="small" className="w-full mt-4" direction="horizontal">
+                    <Button
+                      type="primary"
+                      icon={<EditOutlined />}
+                      onClick={() => handleEditModal(item)}
+                      className="flex-1 bg-blue-500"
+                      block
+                    >
+                      Edit
+                    </Button>
+                    <Button
+                      type="primary"
+                      danger
+                      icon={<DeleteOutlined />}
+                      onClick={() => handleDelete(item._id)}
+                      className="flex-1"
+                      block
+                    >
+                      Delete
+                    </Button>
+                  </Space>
+                </div>
+              </Card>
+            ))
+          ) : (
+            <Card className="text-center py-12">
+              <Text className="text-gray-500 dark:text-gray-400">
+                No companies found
+              </Text>
             </Card>
-          ))}
+          )}
         </div>
       )}
 
+      {/* Modal */}
       <Modal
-        title="Create Company"
+        title={
+          <Space className="text-lg">
+            <ShopOutlined className="text-blue-500" />
+            <Text strong>{isEdit ? "Edit Company" : "Create New Company"}</Text>
+          </Space>
+        }
         open={createCompanyModalVisible}
         onCancel={handleCreateCompanyCancel}
         onOk={isEdit ? handleEdit : handleCreateCompany}
+        okText={isEdit ? "Update" : "Create"}
+        cancelText="Cancel"
+        width={screens.xs ? "95%" : 600}
+        className="top-8"
+        okButtonProps={{ 
+          className: "bg-blue-500 hover:bg-blue-600",
+          size: "large"
+        }}
+        cancelButtonProps={{ size: "large" }}
       >
-        <Form form={form} layout="vertical">
+        <Form
+          form={form}
+          layout="vertical"
+          className="mt-6"
+        >
           <Form.Item
-            label="Company Name"
+            label={<Text strong>Company Name</Text>}
             name="company"
             rules={[
-              { required: true, message: "Please input the company name!" },
+              { required: true, message: "Please enter company name!" },
+              { min: 2, message: "Company name must be at least 2 characters" }
             ]}
           >
-            <Input />
+            <Input
+              size="large"
+              placeholder="Enter company name"
+              prefix={<ShopOutlined className="text-gray-400" />}
+            />
           </Form.Item>
+
           <Form.Item
-            name={"products"}
+            label={<Text strong>Products</Text>}
+            name="products"
             rules={[
-              { required: true, message: "Select a product", type: "array" },
+              { required: true, message: "Please select at least one product!", type: "array" },
             ]}
           >
             <Select
               mode="multiple"
-              placeholder="Select product"
+              size="large"
+              placeholder="Select products"
               loading={productLoading}
+              showSearch
+              filterOption={(input, option) =>
+                (option?.children as string).toLowerCase().includes(input.toLowerCase())
+              }
+              maxTagCount="responsive"
             >
               {products?.map((product: ProductInterface) => (
                 <Option key={product.productsname} value={product.productsname}>
