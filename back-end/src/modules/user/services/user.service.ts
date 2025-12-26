@@ -20,11 +20,13 @@ export class UserService {
 
   async createUser(createUser: UserDto) {
     try {
-      this.sendVerifyEmail(createUser.email);
+      // this.sendVerifyEmail(createUser.email);
       const userData = {
         ...createUser,
         password: encrypt(createUser.password),
-      };
+      };console.log('user data',userData);
+      
+
       const newUser = new this.userModel(userData);
       return await newUser.save();
     } catch (error) {

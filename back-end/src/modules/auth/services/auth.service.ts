@@ -40,10 +40,10 @@ export class AuthService {
       console.error('User not found');
       return null;
     }
-    if (!user.verified) {
-      await this.userService.sendVerifyEmail(user.email);
-      throw new BadRequestException('Please verify your email first');
-    }
+    // if (!user.verified) {
+    //   await this.userService.sendVerifyEmail(user.email);
+    //   throw new BadRequestException('Please verify your email first');
+    // }
     const isValidPassword = await compareHash(password, user.password);
     if (!isValidPassword) {
       console.error('Password does not match');
